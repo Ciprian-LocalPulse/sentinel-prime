@@ -1,0 +1,1874 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SENTINEL PRIME — Enterprise Technical Documentation v4.2.0</title>
+<link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Rajdhani:wght@400;600;700&family=Orbitron:wght@400;700;900&display=swap" rel="stylesheet">
+<style>
+/* ============================================================
+   SENTINEL PRIME — Enterprise Technical Documentation
+   © 2026 Ciprian Stefan Plesca. All Rights Reserved.
+   contact@localpulse.pro | cal.com/ciprian-stefan-plesca
+   ============================================================ */
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --void:#030508;--base:#060810;--surface:#0a0d18;
+  --elevated:#0f1220;--panel:#141828;
+  --cyan:#00d4ff;--cyan-dim:#0099bb;--cyan-glow:rgba(0,212,255,0.12);
+  --green:#00ff88;--red:#ff3355;--amber:#ffaa00;--purple:#9966ff;--blue:#2277ff;
+  --text-1:#edf0f8;--text-2:#8b9abf;--text-3:#4a5472;--text-4:#2a3050;
+  --border-c:rgba(0,212,255,0.18);--border-b:rgba(255,255,255,0.05);
+  --font-ui:'Rajdhani',sans-serif;--font-mono:'Share Tech Mono',monospace;
+  --font-disp:'Orbitron',sans-serif;
+}
+html{background:var(--void);color:var(--text-1);font-family:var(--font-ui);font-size:15px;line-height:1.7;overflow-x:hidden;scroll-behavior:smooth}
+body::before{content:'';position:fixed;inset:0;background:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,0,0,0.04) 2px,rgba(0,0,0,0.04) 4px);pointer-events:none;z-index:9999}
+::-webkit-scrollbar{width:3px}::-webkit-scrollbar-track{background:var(--base)}::-webkit-scrollbar-thumb{background:var(--cyan-dim)}
+
+/* ── LAYOUT ── */
+.layout{display:flex;min-height:100vh}
+
+/* ── SIDEBAR ── */
+.sidebar{
+  width:264px;flex-shrink:0;
+  background:var(--base);border-right:1px solid var(--border-c);
+  position:fixed;top:0;left:0;bottom:0;
+  overflow-y:auto;z-index:100;display:flex;flex-direction:column;
+}
+.sidebar-brand{padding:24px 20px 16px;border-bottom:1px solid var(--border-c)}
+.sidebar-logo{font-family:var(--font-disp);font-size:13px;font-weight:900;letter-spacing:2px;color:var(--cyan);text-shadow:0 0 16px var(--cyan)}
+.sidebar-sub{font-family:var(--font-mono);font-size:8px;color:var(--text-3);letter-spacing:1.5px;margin-top:4px}
+.sidebar-version{font-family:var(--font-mono);font-size:8px;color:var(--amber);margin-top:6px;letter-spacing:1px}
+.nav-group{padding:14px 0 0}
+.nav-group-label{font-family:var(--font-mono);font-size:8px;letter-spacing:3px;color:var(--text-4);padding:0 20px 8px;text-transform:uppercase}
+.nav-item{display:block;padding:8px 20px;font-family:var(--font-mono);font-size:10px;color:var(--text-3);text-decoration:none;letter-spacing:.8px;transition:all .2s;border-left:2px solid transparent;cursor:pointer}
+.nav-item:hover,.nav-item.active{color:var(--cyan);background:rgba(0,212,255,0.04);border-left-color:var(--cyan)}
+.nav-item .nav-num{color:var(--text-4);font-size:9px;margin-right:6px}
+.sidebar-footer{margin-top:auto;padding:16px 20px;border-top:1px solid var(--border-b)}
+.sidebar-footer p{font-family:var(--font-mono);font-size:8px;color:var(--text-4);letter-spacing:.8px;line-height:1.9}
+.main-content{margin-left:264px;flex:1}
+
+/* ── TOPBAR ── */
+.topbar{
+  position:sticky;top:0;z-index:50;
+  background:rgba(6,8,16,0.97);border-bottom:1px solid var(--border-c);
+  padding:12px 48px;display:flex;align-items:center;justify-content:space-between;
+  backdrop-filter:blur(12px);
+}
+.topbar-title{font-family:var(--font-mono);font-size:10px;color:var(--text-3);letter-spacing:2px}
+.topbar-classification{font-family:var(--font-mono);font-size:8px;letter-spacing:2px;padding:4px 12px;border:1px solid rgba(255,51,85,.4);color:var(--red)}
+.topbar-search{display:flex;align-items:center;gap:8px;background:var(--surface);border:1px solid var(--border-c);padding:5px 12px;font-family:var(--font-mono);font-size:10px}
+.topbar-search input{background:none;border:none;outline:none;color:var(--text-2);font-family:var(--font-mono);font-size:10px;width:160px}
+.topbar-search input::placeholder{color:var(--text-4)}
+
+/* ── PROGRESS BAR ── */
+#readProgress{position:fixed;top:0;left:264px;right:0;height:2px;background:linear-gradient(90deg,var(--cyan),var(--green));transform-origin:left;transform:scaleX(0);z-index:200;transition:transform .1s}
+
+/* ── CONTENT ── */
+.doc-section{padding:60px 48px;border-bottom:1px solid var(--border-b);max-width:1020px;opacity:0;transform:translateY(16px);transition:opacity .5s,transform .5s}
+.doc-section.visible{opacity:1;transform:translateY(0)}
+.doc-section:last-child{border-bottom:none}
+.section-eyebrow{font-family:var(--font-mono);font-size:9px;letter-spacing:3px;color:var(--cyan);margin-bottom:12px;display:block}
+.section-title{font-family:var(--font-disp);font-size:clamp(22px,3vw,36px);font-weight:700;color:#fff;margin-bottom:20px;line-height:1.2}
+.section-desc{font-size:15px;color:var(--text-2);max-width:740px;line-height:1.9;margin-bottom:32px}
+h3{font-family:var(--font-disp);font-size:14px;font-weight:700;color:var(--cyan);letter-spacing:1px;margin:36px 0 14px}
+h4{font-family:var(--font-mono);font-size:11px;color:var(--amber);letter-spacing:1.5px;margin:22px 0 10px}
+p{color:var(--text-2);line-height:1.9;margin-bottom:14px}
+p strong{color:var(--text-1)}
+p code,li code{font-family:var(--font-mono);font-size:11px;color:var(--green);background:rgba(0,255,136,.06);padding:2px 6px;border:1px solid rgba(0,255,136,.15)}
+ul,ol{padding-left:0;list-style:none}
+li{font-family:var(--font-mono);font-size:11px;color:var(--text-2);padding:7px 0;border-bottom:1px solid var(--border-b);display:flex;align-items:flex-start;gap:10px;letter-spacing:.3px;line-height:1.6}
+li:last-child{border-bottom:none}
+li::before{content:'▸';color:var(--cyan);flex-shrink:0;font-size:9px;margin-top:3px}
+li.g::before{color:var(--green)}li.a::before{color:var(--amber)}li.r::before{color:var(--red)}li.p::before{color:var(--purple)}
+
+/* ── CODE BLOCKS ── */
+.code-block{
+  background:var(--void);border:1px solid var(--border-c);
+  padding:20px 22px;font-family:var(--font-mono);font-size:11px;
+  line-height:1.9;overflow-x:auto;margin:16px 0;position:relative;
+}
+.code-block::before{content:attr(data-lang);position:absolute;top:8px;right:12px;font-size:8px;letter-spacing:2px;color:var(--text-4)}
+.code-block .kw{color:var(--cyan)}.code-block .str{color:var(--green)}.code-block .cmt{color:var(--text-4)}
+.code-block .fn{color:var(--amber)}.code-block .val{color:var(--purple)}.code-block .num{color:#ff6e79}
+.code-block .op{color:var(--text-2)}.code-block .tag{color:var(--red)}.code-block .attr{color:var(--amber)}
+
+/* copy button */
+.cb-wrap{position:relative}
+.cb-wrap .copy-btn{position:absolute;top:8px;right:48px;font-family:var(--font-mono);font-size:8px;letter-spacing:1.5px;padding:3px 9px;background:var(--elevated);border:1px solid var(--border-c);color:var(--text-3);cursor:pointer;transition:all .2s;opacity:0}
+.cb-wrap:hover .copy-btn{opacity:1}
+.cb-wrap .copy-btn:hover{border-color:var(--cyan);color:var(--cyan)}
+.cb-wrap .copy-btn.copied{color:var(--green);border-color:var(--green)}
+
+/* ── CALLOUT ── */
+.callout{border-left:3px solid;padding:16px 20px;margin:20px 0;background:rgba(255,255,255,.02);font-family:var(--font-mono);font-size:11px;line-height:1.8}
+.callout.info{border-color:var(--cyan);color:var(--text-2)}.callout.warn{border-color:var(--amber)}.callout.danger{border-color:var(--red)}.callout.success{border-color:var(--green)}
+.callout strong{color:var(--text-1)}
+.callout-label{font-size:8px;letter-spacing:3px;display:block;margin-bottom:6px}
+.callout.info .callout-label{color:var(--cyan)}.callout.warn .callout-label{color:var(--amber)}.callout.danger .callout-label{color:var(--red)}.callout.success .callout-label{color:var(--green)}
+
+/* ── TABLES ── */
+.doc-table{width:100%;border-collapse:collapse;margin:20px 0;font-family:var(--font-mono);font-size:10px}
+.doc-table th{padding:10px 14px;text-align:left;color:var(--text-3);border-bottom:1px solid var(--border-c);font-weight:400;letter-spacing:1.5px;background:var(--elevated)}
+.doc-table td{padding:10px 14px;color:var(--text-2);border-bottom:1px solid var(--border-b);vertical-align:top;line-height:1.6}
+.doc-table tr:hover td{background:rgba(0,212,255,.02)}
+.tag{font-family:var(--font-mono);font-size:8px;padding:2px 7px;border-radius:1px;display:inline-block}
+.tag-c{background:rgba(0,212,255,.1);color:var(--cyan);border:1px solid rgba(0,212,255,.25)}
+.tag-g{background:rgba(0,255,136,.08);color:var(--green);border:1px solid rgba(0,255,136,.25)}
+.tag-a{background:rgba(255,170,0,.1);color:var(--amber);border:1px solid rgba(255,170,0,.25)}
+.tag-r{background:rgba(255,51,85,.1);color:var(--red);border:1px solid rgba(255,51,85,.25)}
+.tag-p{background:rgba(153,102,255,.1);color:var(--purple);border:1px solid rgba(153,102,255,.25)}
+
+/* ── FLOW DIAGRAM ── */
+.flow{display:flex;flex-direction:column;gap:2px;margin:20px 0}
+.flow-row{display:flex;align-items:stretch;gap:2px}
+.flow-box{padding:13px 18px;background:var(--elevated);border:1px solid var(--border-b);font-family:var(--font-mono);font-size:10px;color:var(--text-2);flex:1;position:relative}
+.flow-box.accent{border-color:var(--cyan);color:var(--cyan)}.flow-box.ok{border-color:var(--green);color:var(--green)}
+.flow-box.warn{border-color:var(--amber);color:var(--amber)}.flow-box.err{border-color:var(--red);color:var(--red)}
+.flow-box strong{display:block;margin-bottom:3px;font-size:11px}
+.flow-arrow{display:flex;align-items:center;justify-content:center;font-size:16px;color:var(--text-4);padding:0 10px}
+
+/* ── FILE TREE ── */
+.file-tree{font-family:var(--font-mono);font-size:11px;background:var(--void);border:1px solid var(--border-c);padding:20px 22px;line-height:2}
+.file-tree .dir{color:var(--cyan)}.file-tree .file{color:var(--text-2)}.file-tree .comment{color:var(--text-4)}.file-tree .important{color:var(--amber)}
+
+/* ── MODULE CARDS ── */
+.module-grid{display:grid;grid-template-columns:1fr 1fr;gap:1px;background:var(--border-b);margin:20px 0}
+.mod-doc-card{background:var(--surface);padding:22px 20px}
+.mod-doc-num{font-family:var(--font-mono);font-size:8px;color:var(--text-4);letter-spacing:2px;margin-bottom:8px}
+.mod-doc-name{font-family:var(--font-disp);font-size:12px;font-weight:700;color:#fff;margin-bottom:10px;letter-spacing:1px}
+.mod-doc-vars{display:flex;flex-wrap:wrap;gap:4px;margin-top:10px}
+.var-chip{font-family:var(--font-mono);font-size:8px;padding:2px 6px;background:rgba(0,212,255,.06);border:1px solid rgba(0,212,255,.15);color:var(--cyan)}
+
+/* ── SPEC GRID ── */
+.spec-grid{display:grid;grid-template-columns:1fr 1fr;gap:2px;background:var(--border-b);margin:20px 0}
+.spec-item{background:var(--elevated);padding:14px 18px}
+.spec-label{font-family:var(--font-mono);font-size:8px;letter-spacing:2px;color:var(--text-3);margin-bottom:4px}
+.spec-value{font-family:var(--font-mono);font-size:12px;color:var(--text-1)}
+.spec-value.cyan{color:var(--cyan)}.spec-value.green{color:var(--green)}.spec-value.amber{color:var(--amber)}
+
+/* ── LICENSE TIERS ── */
+.tier-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:var(--border-b);margin:20px 0}
+.tier-card{background:var(--surface);padding:22px 18px;position:relative}
+.tier-card.featured{background:var(--elevated);border:1px solid var(--cyan)}
+.tier-badge{position:absolute;top:-1px;left:50%;transform:translateX(-50%);font-family:var(--font-mono);font-size:8px;letter-spacing:2px;padding:3px 10px;background:var(--cyan);color:var(--void);white-space:nowrap}
+.tier-name{font-family:var(--font-disp);font-size:13px;font-weight:700;color:#fff;margin-bottom:6px;letter-spacing:1px}
+.tier-price{font-family:var(--font-disp);font-size:28px;font-weight:900;color:var(--cyan);line-height:1;text-shadow:0 0 14px var(--cyan);margin-bottom:10px}
+.tier-desc{font-family:var(--font-mono);font-size:9px;color:var(--text-3);line-height:1.7;margin-bottom:12px;letter-spacing:.3px}
+.tier-features li{font-family:var(--font-mono);font-size:9px;color:var(--text-2);padding:4px 0;border-bottom:1px solid var(--border-b);display:flex;align-items:flex-start;gap:6px;letter-spacing:.3px}
+.tier-features li::before{content:'▸';color:var(--cyan);flex-shrink:0;font-size:8px}
+
+/* ── TOKEN REFERENCE ── */
+.token-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:1px;background:var(--border-b);margin:20px 0}
+.token-item{background:var(--surface);padding:12px 14px;display:flex;align-items:center;gap:10px}
+.token-swatch{width:24px;height:24px;flex-shrink:0;border:1px solid rgba(255,255,255,.1)}
+.token-info .token-var{font-family:var(--font-mono);font-size:9px;color:var(--cyan);letter-spacing:.5px}
+.token-info .token-hex{font-family:var(--font-mono);font-size:9px;color:var(--text-3)}
+
+/* ── API ENDPOINT TABLE ── */
+.endpoint-row{display:grid;grid-template-columns:80px 1fr auto;gap:0;background:var(--surface);border:1px solid var(--border-b);margin-bottom:2px;font-family:var(--font-mono);font-size:10px;overflow:hidden}
+.ep-method{padding:12px 14px;font-weight:700;letter-spacing:1px;display:flex;align-items:center;justify-content:center;border-right:1px solid var(--border-b)}
+.ep-method.get{background:rgba(0,212,255,.08);color:var(--cyan)}.ep-method.post{background:rgba(0,255,136,.08);color:var(--green)}
+.ep-method.put{background:rgba(255,170,0,.08);color:var(--amber)}.ep-method.del{background:rgba(255,51,85,.08);color:var(--red)}
+.ep-path{padding:12px 16px;color:var(--text-2);display:flex;align-items:center;border-right:1px solid var(--border-b)}
+.ep-desc{padding:12px 16px;color:var(--text-3);display:flex;align-items:center;font-size:9px;letter-spacing:.5px}
+
+/* ── DIVIDER ── */
+.doc-divider{height:1px;background:linear-gradient(90deg,transparent,var(--border-c),transparent);margin:32px 0}
+
+/* ── KEYFRAME EVENTS ── */
+.event-stream{background:var(--void);border:1px solid var(--border-c);padding:16px 20px;font-family:var(--font-mono);font-size:10px;line-height:2}
+.event-ts{color:var(--text-4)}.event-type{color:var(--amber)}.event-payload{color:var(--green)}
+.event-line{border-bottom:1px solid var(--border-b);padding:4px 0}
+.event-line:last-child{border-bottom:none}
+
+/* ── MOBILE ── */
+@media(max-width:900px){
+  .sidebar{width:0;overflow:hidden}.main-content{margin-left:0}
+  #readProgress{left:0}
+  .doc-section{padding:40px 20px}
+  .topbar{padding:12px 20px}
+  .module-grid,.tier-grid,.token-grid{grid-template-columns:1fr}
+  .spec-grid{grid-template-columns:1fr}
+}
+</style>
+</head>
+<body>
+<div id="readProgress"></div>
+<div class="layout">
+
+<!-- ═══════════ SIDEBAR ═══════════ -->
+<aside class="sidebar">
+  <div class="sidebar-brand">
+    <div class="sidebar-logo">SENTINEL PRIME</div>
+    <div class="sidebar-sub">ENTERPRISE TECHNICAL DOCS</div>
+    <div class="sidebar-version">v4.2.0-ENTERPRISE // 2026</div>
+  </div>
+
+  <div class="nav-group">
+    <div class="nav-group-label">Getting Started</div>
+    <a href="#overview"       class="nav-item active"><span class="nav-num">00</span>Overview</a>
+    <a href="#structure"      class="nav-item"><span class="nav-num">01</span>Package Structure</a>
+    <a href="#quickstart"     class="nav-item"><span class="nav-num">02</span>Quickstart</a>
+    <a href="#specifications" class="nav-item"><span class="nav-num">03</span>Technical Specs</a>
+  </div>
+
+  <div class="nav-group">
+    <div class="nav-group-label">Architecture</div>
+    <a href="#architecture"   class="nav-item"><span class="nav-num">04</span>System Architecture</a>
+    <a href="#modules"        class="nav-item"><span class="nav-num">05</span>Module Registry</a>
+    <a href="#design-system"  class="nav-item"><span class="nav-num">06</span>CSS Design System</a>
+  </div>
+
+  <div class="nav-group">
+    <div class="nav-group-label">Integration</div>
+    <a href="#data-binding"   class="nav-item"><span class="nav-num">07</span>Data Binding</a>
+    <a href="#api-integration"class="nav-item"><span class="nav-num">08</span>API Integration</a>
+    <a href="#websocket"      class="nav-item"><span class="nav-num">09</span>WebSocket Streams</a>
+    <a href="#chartjs"        class="nav-item"><span class="nav-num">10</span>Chart.js Reference</a>
+  </div>
+
+  <div class="nav-group">
+    <div class="nav-group-label">Deployment</div>
+    <a href="#deploy-static"  class="nav-item"><span class="nav-num">11</span>Static File Server</a>
+    <a href="#deploy-docker"  class="nav-item"><span class="nav-num">12</span>Docker Container</a>
+    <a href="#deploy-aws"     class="nav-item"><span class="nav-num">13</span>AWS S3 + CloudFront</a>
+    <a href="#deploy-k8s"     class="nav-item"><span class="nav-num">14</span>Kubernetes / Helm</a>
+    <a href="#deploy-electron"class="nav-item"><span class="nav-num">15</span>Electron Desktop</a>
+  </div>
+
+  <div class="nav-group">
+    <div class="nav-group-label">White-Label</div>
+    <a href="#rebranding"     class="nav-item"><span class="nav-num">16</span>Rebranding Guide</a>
+    <a href="#customisation"  class="nav-item"><span class="nav-num">17</span>Module Customisation</a>
+  </div>
+
+  <div class="nav-group">
+    <div class="nav-group-label">Legal</div>
+    <a href="#licensing"      class="nav-item"><span class="nav-num">18</span>License Tiers</a>
+    <a href="#ip"             class="nav-item"><span class="nav-num">19</span>IP &amp; Copyright</a>
+  </div>
+
+  <div class="sidebar-footer">
+    <p>
+      © 2026 CIPRIAN STEFAN PLESCA<br>
+      ALL RIGHTS RESERVED<br><br>
+      contact@localpulse.pro<br>
+      cal.com/ciprian-stefan-plesca
+    </p>
+  </div>
+</aside>
+
+<!-- ═══════════ MAIN ═══════════ -->
+<main class="main-content">
+  <div class="topbar">
+    <span class="topbar-title">SENTINEL PRIME // ENTERPRISE TECHNICAL DOCUMENTATION v4.2.0</span>
+    <div class="topbar-search">
+      <span style="color:var(--text-4);font-size:10px">⌕</span>
+      <input type="text" id="docSearch" placeholder="SEARCH DOCS...">
+    </div>
+    <span class="topbar-classification">TOP SECRET // LICENSED PERSONNEL ONLY</span>
+  </div>
+
+  <!-- ═══════════════════════════════════════ 00 — OVERVIEW -->
+  <section class="doc-section" id="overview">
+    <span class="section-eyebrow">// 00 — PRODUCT OVERVIEW</span>
+    <h2 class="section-title">Sentinel Prime Enterprise<br>Technical Reference Manual</h2>
+    <div class="section-desc">
+      This document constitutes the official technical documentation for <strong>Sentinel Prime v4.2.0-ENTERPRISE</strong> — a Proof-of-Concept Sci-Fi / Hacker Dashboard UI Kit built in pure HTML5, CSS3, and Vanilla JavaScript. All sections are intended for licensed users and implementation partners only.
+    </div>
+
+    <div class="callout info">
+      <span class="callout-label">// INFO</span>
+      <strong>Sentinel Prime is a UI Kit — not production security software.</strong> All data displayed is simulated. No backend, no real threat detection, no live security data pipeline exists in the base package. This documentation covers how to integrate real data sources into the existing UI architecture.
+    </div>
+
+    <h3>PRODUCT IDENTITY</h3>
+    <table class="doc-table">
+      <tr><th>ATTRIBUTE</th><th>VALUE</th></tr>
+      <tr><td>Product Name</td><td>Sentinel Prime</td></tr>
+      <tr><td>Version</td><td>4.2.0-ENTERPRISE</td></tr>
+      <tr><td>Classification</td><td><span class="tag tag-r">PROPRIETARY</span></td></tr>
+      <tr><td>Author</td><td>Ciprian Stefan Plesca</td></tr>
+      <tr><td>Copyright</td><td>© 2026 Ciprian Stefan Plesca. All Rights Reserved.</td></tr>
+      <tr><td>Contact</td><td>contact@localpulse.pro</td></tr>
+      <tr><td>Booking</td><td>cal.com/ciprian-stefan-plesca</td></tr>
+      <tr><td>License Type</td><td>Proprietary Commercial License (4 Tiers)</td></tr>
+      <tr><td>IP Protection</td><td>Berne Convention / WIPO / EU IP Directives</td></tr>
+      <tr><td>Product Type</td><td>Proof-of-Concept UI Kit / Wireframe Dashboard</td></tr>
+      <tr><td>Stack</td><td>HTML5 + CSS3 + Vanilla JS + Chart.js v4.4.1</td></tr>
+      <tr><td>External CDN Deps</td><td>3 (Chart.js, Google Fonts — Orbitron, Share Tech Mono, Rajdhani)</td></tr>
+      <tr><td>Modules</td><td>8 Enterprise SOC Modules + 3 Extended Panels</td></tr>
+      <tr><td>Lines of Code</td><td>3,225+ (sentinel_prime.html) + 994 (index.html)</td></tr>
+      <tr><td>Total Package Size</td><td>~240KB (HTML) + CDN assets</td></tr>
+    </table>
+  </section>
+
+  <!-- ═══════════════════════════════════════ 01 — STRUCTURE -->
+  <section class="doc-section" id="structure">
+    <span class="section-eyebrow">// 01 — PACKAGE STRUCTURE</span>
+    <h2 class="section-title">Deliverable Package<br>File Structure</h2>
+
+    <div class="file-tree">
+<span class="dir">sentinel_prime_enterprise/</span>
+├── <span class="important">index.html</span>                  <span class="comment"># Landing / Sales Page (Enterprise Edition)</span>
+├── <span class="important">sentinel_prime.html</span>         <span class="comment"># Full 11-Tab Dashboard UI Kit</span>
+├── <span class="dir">docs/</span>
+│   └── <span class="important">implementation_guide.html</span>  <span class="comment"># This document — full technical reference</span>
+├── <span class="dir">assets/</span>
+│   ├── <span class="file">sentinel_prime.png</span>          <span class="comment"># Product preview image (wide, 1200×630)</span>
+│   ├── <span class="file">sentinel_prime__1_.png</span>      <span class="comment"># Product preview image (square, 1080×1080)</span>
+│   └── <span class="file">instagram_-_Profile_Picture.png</span> <span class="comment"># Social media avatar asset</span>
+├── <span class="dir">legal/</span>
+│   ├── <span class="important">Licence.txt</span>                 <span class="comment"># Short-form proprietary licence</span>
+│   └── <span class="important">Enterprise_Proprietary_Software_License_Agreement.pdf</span> <span class="comment"># Full enterprise agreement</span>
+└── <span class="file">Enterprise_Proprietary_Software_License_Agreement.md</span> <span class="comment"># Markdown version</span>
+    </div>
+
+    <div class="callout warn">
+      <span class="callout-label">// IMPORTANT</span>
+      <strong>Both HTML files are self-contained single-file applications.</strong> All CSS and JavaScript is embedded inline. No external file references except Google Fonts and Chart.js (CDN). The dashboard functions fully offline if those assets are cached or downloaded locally.
+    </div>
+
+    <h3>OFFLINE / AIR-GAPPED DEPLOYMENT</h3>
+    <p>For air-gapped enterprise environments (no internet access), download and host the following resources locally, then replace the CDN references in each <code>&lt;head&gt;</code>:</p>
+    <ul>
+      <li class="g">Chart.js v4.4.1: <code>https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js</code></li>
+      <li class="g">Orbitron font family: Google Fonts → Download Family → place in <code>/assets/fonts/</code></li>
+      <li class="g">Share Tech Mono: Google Fonts → Download Family → place in <code>/assets/fonts/</code></li>
+      <li class="g">Rajdhani: Google Fonts → Download Family → place in <code>/assets/fonts/</code></li>
+      <li class="a">Replace <code>&lt;link href="https://fonts.googleapis.com/..."&gt;</code> with <code>@font-face</code> declarations</li>
+      <li class="a">Replace CDN <code>&lt;script src="..."&gt;</code> with local <code>/assets/js/chart.umd.js</code></li>
+    </ul>
+  </section>
+
+  <!-- ═══════════════════════════════════════ 02 — QUICKSTART -->
+  <section class="doc-section" id="quickstart">
+    <span class="section-eyebrow">// 02 — QUICKSTART</span>
+    <h2 class="section-title">Deploy in Under<br>60 Seconds</h2>
+
+    <h4>OPTION A — OPEN DIRECTLY IN BROWSER</h4>
+    <div class="cb-wrap">
+      <div class="code-block" data-lang="BASH">
+<span class="cmt"># No server required — open directly in browser</span>
+<span class="fn">open</span> sentinel_prime.html      <span class="cmt"># macOS</span>
+<span class="fn">start</span> sentinel_prime.html     <span class="cmt"># Windows</span>
+<span class="fn">xdg-open</span> sentinel_prime.html  <span class="cmt"># Linux</span>
+
+<span class="cmt"># Landing page</span>
+<span class="fn">open</span> index.html               <span class="cmt"># Sales / marketing page</span></div>
+      <button class="copy-btn" onclick="copyCode(this)">COPY</button>
+    </div>
+
+    <h4>OPTION B — LOCAL HTTP SERVER (RECOMMENDED)</h4>
+    <div class="cb-wrap">
+      <div class="code-block" data-lang="BASH">
+<span class="cmt"># Python 3 (zero dependencies)</span>
+cd sentinel_prime_enterprise/
+python3 -m http.server 8080
+<span class="cmt"># → http://localhost:8080 (index.html)</span>
+<span class="cmt"># → http://localhost:8080/sentinel_prime.html (dashboard)</span>
+
+<span class="cmt"># Node.js serve</span>
+npx serve .
+<span class="cmt"># → http://localhost:3000</span>
+
+<span class="cmt"># PHP built-in server</span>
+php -S localhost:8080</div>
+      <button class="copy-btn" onclick="copyCode(this)">COPY</button>
+    </div>
+
+    <h4>OPTION C — DOCKER (PRODUCTION)</h4>
+    <div class="cb-wrap">
+      <div class="code-block" data-lang="DOCKERFILE">
+<span class="kw">FROM</span> <span class="val">nginx:alpine</span>
+<span class="kw">COPY</span> <span class="str">. /usr/share/nginx/html/</span>
+<span class="kw">EXPOSE</span> <span class="num">80</span></div>
+      <button class="copy-btn" onclick="copyCode(this)">COPY</button>
+    </div>
+    <div class="cb-wrap">
+      <div class="code-block" data-lang="BASH">
+docker build -t sentinel-prime .
+docker run -d -p 8080:80 --name sentinel sentinel-prime
+<span class="cmt"># → http://localhost:8080</span></div>
+      <button class="copy-btn" onclick="copyCode(this)">COPY</button>
+    </div>
+
+    <div class="callout success">
+      <span class="callout-label">// SUCCESS</span>
+      The dashboard requires <strong>zero build steps, zero npm install, zero configuration</strong> for basic usage. Advanced features (API integration, white-labeling) are covered in subsequent sections.
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════════════════ 03 — SPECS -->
+  <section class="doc-section" id="specifications">
+    <span class="section-eyebrow">// 03 — TECHNICAL SPECIFICATIONS</span>
+    <h2 class="section-title">Technical Specifications<br>&amp; Compatibility Matrix</h2>
+
+    <h3>BROWSER COMPATIBILITY</h3>
+    <table class="doc-table">
+      <tr><th>BROWSER</th><th>MIN VERSION</th><th>STATUS</th><th>NOTES</th></tr>
+      <tr><td>Chrome</td><td>120+</td><td><span class="tag tag-g">FULL SUPPORT</span></td><td>Recommended. All features operational.</td></tr>
+      <tr><td>Firefox</td><td>121+</td><td><span class="tag tag-g">FULL SUPPORT</span></td><td>All features operational.</td></tr>
+      <tr><td>Safari</td><td>17+</td><td><span class="tag tag-g">FULL SUPPORT</span></td><td>Tested on macOS Sequoia.</td></tr>
+      <tr><td>Edge</td><td>120+</td><td><span class="tag tag-g">FULL SUPPORT</span></td><td>Chromium-based — full parity with Chrome.</td></tr>
+      <tr><td>Chrome Mobile</td><td>120+</td><td><span class="tag tag-a">PARTIAL</span></td><td>Functions; layout optimised for desktop (1280px+).</td></tr>
+      <tr><td>Safari Mobile</td><td>17+</td><td><span class="tag tag-a">PARTIAL</span></td><td>Functions; not primary design target.</td></tr>
+      <tr><td>IE / Legacy</td><td>Any</td><td><span class="tag tag-r">NOT SUPPORTED</span></td><td>CSS Grid / custom properties unsupported.</td></tr>
+    </table>
+
+    <h3>PERFORMANCE SPECIFICATIONS</h3>
+    <div class="spec-grid">
+      <div class="spec-item"><div class="spec-label">INITIAL LOAD TIME</div><div class="spec-value green">&lt; 1.2s (cached fonts + Chart.js)</div></div>
+      <div class="spec-item"><div class="spec-label">COLD LOAD TIME</div><div class="spec-value amber">&lt; 3.5s (first visit, all CDN assets)</div></div>
+      <div class="spec-item"><div class="spec-label">MODULE SWITCH TIME</div><div class="spec-value green">&lt; 50ms (DOM class toggle — instant)</div></div>
+      <div class="spec-item"><div class="spec-label">CHART RENDER TIME</div><div class="spec-value green">&lt; 200ms (Chart.js animated init)</div></div>
+      <div class="spec-item"><div class="spec-label">SENTINEL_PRIME.HTML</div><div class="spec-value cyan">~185KB (self-contained)</div></div>
+      <div class="spec-item"><div class="spec-label">INDEX.HTML</div><div class="spec-value cyan">~55KB (self-contained)</div></div>
+      <div class="spec-item"><div class="spec-label">EXTERNAL CDN REQUESTS</div><div class="spec-value amber">4 total (1× Chart.js + 3× Google Fonts)</div></div>
+      <div class="spec-item"><div class="spec-label">OFFLINE CAPABILITY</div><div class="spec-value cyan">Full — once CDN assets are cached</div></div>
+      <div class="spec-item"><div class="spec-label">RECOMMENDED RESOLUTION</div><div class="spec-value cyan">1920×1080 minimum</div></div>
+      <div class="spec-item"><div class="spec-label">CHART.JS VERSION</div><div class="spec-value cyan">v4.4.1 UMD (cdnjs.cloudflare.com)</div></div>
+    </div>
+
+    <h3>CSS FEATURE REQUIREMENTS</h3>
+    <ul>
+      <li class="g">CSS Custom Properties (variables) — core design token system throughout</li>
+      <li class="g">CSS Grid Layout — primary module and card layout engine</li>
+      <li class="g">CSS Flexbox — component-level layout and alignment</li>
+      <li class="g">CSS Keyframe Animations — glitch, scanline, pulse, blink effects</li>
+      <li class="g">CSS Clip-Path — angled button shape rendering</li>
+      <li class="g">CSS Backdrop-Filter — topbar and modal blur glass effects</li>
+      <li class="g">CSS <code>calc()</code> — dynamic sizing throughout layout</li>
+      <li class="g">CSS <code>repeating-linear-gradient</code> — scanline overlay on body</li>
+      <li class="a">CSS <code>scroll-behavior: smooth</code> — progressive enhancement only</li>
+    </ul>
+  </section>
+
+  <!-- ═══════════════════════════════════════ 04 — ARCHITECTURE -->
+  <section class="doc-section" id="architecture">
+    <span class="section-eyebrow">// 04 — SYSTEM ARCHITECTURE</span>
+    <h2 class="section-title">System Architecture<br>&amp; Integration Design</h2>
+
+    <div class="section-desc">
+      Sentinel Prime uses a layered, backend-agnostic single-file architecture. The UI shell renders independently of any data source — enabling seamless integration with any SIEM, threat intelligence platform, or custom backend without structural changes.
+    </div>
+
+    <h3>ARCHITECTURE LAYERS</h3>
+    <div class="flow">
+      <div class="flow-row"><div class="flow-box accent"><strong>// LAYER 5 — DEPLOYMENT TARGET</strong>Static Host (Nginx / Apache) · Docker Container · AWS S3 + CloudFront · Kubernetes · Electron Desktop App</div></div>
+      <div class="flow-row"><div class="flow-arrow">↓</div></div>
+      <div class="flow-row"><div class="flow-box ok"><strong>// LAYER 4 — UI SHELL (sentinel_prime.html)</strong>App Shell · Fixed Topbar + Clock · Collapsible Sidebar Navigation · Tab Viewport Container · CSS Scanline + CRT Layer</div></div>
+      <div class="flow-row"><div class="flow-arrow">↓</div></div>
+      <div class="flow-row"><div class="flow-box warn"><strong>// LAYER 3 — TAB MODULE REGISTRY (11 Panels)</strong>Each module = independent <code>.tab-pane</code> DOM section. <code>showTab(name)</code> toggles visibility via CSS class. Zero latency switch.</div></div>
+      <div class="flow-row"><div class="flow-arrow">↓</div></div>
+      <div class="flow-row"><div class="flow-box"><strong>// LAYER 2 — DATA BINDING LAYER (Vanilla JS)</strong>Chart.js instance registry (<code>chartInstances{}</code>) · <code>initChartsForTab()</code> lazy init · DOM update functions · <code>setInterval</code> refreshers · WebSocket dispatcher</div></div>
+      <div class="flow-row"><div class="flow-arrow">↓</div></div>
+      <div class="flow-row"><div class="flow-box err"><strong>// LAYER 1 — DATA SOURCE (Integration Point — Replace This Layer)</strong>Static Mock Arrays [DEFAULT OUT-OF-BOX] → Swap with: REST API · WebSocket Stream · GraphQL · SIEM SDK · Splunk HEC · Elastic · Azure Sentinel</div></div>
+    </div>
+
+    <h3>NAVIGATION MECHANISM — showTab()</h3>
+    <p>All 11 tab panels exist in the DOM simultaneously as <code>.tab-pane</code> elements. Visibility is controlled via CSS class toggling — a pure-CSS, zero-latency navigation pattern with lazy chart initialisation:</p>
+    <div class="cb-wrap">
+      <div class="code-block" data-lang="JAVASCRIPT">
+<span class="cmt">// ── Core navigation function ──────────────────────────────</span>
+<span class="kw">function</span> <span class="fn">showTab</span>(name) {
+  <span class="cmt">// Hide all panels</span>
+  document.<span class="fn">querySelectorAll</span>(<span class="str">'.tab-pane'</span>).<span class="fn">forEach</span>(p => p.classList.<span class="fn">remove</span>(<span class="str">'active'</span>));
+
+  <span class="cmt">// Remove active state from all sidebar items</span>
+  document.<span class="fn">querySelectorAll</span>(<span class="str">'.nav-item'</span>).<span class="fn">forEach</span>(n => n.classList.<span class="fn">remove</span>(<span class="str">'active'</span>));
+
+  <span class="cmt">// Show the target panel</span>
+  <span class="kw">const</span> tab = document.<span class="fn">getElementById</span>(<span class="str">`tab-${name}`</span>);
+  <span class="kw">if</span> (tab) tab.classList.<span class="fn">add</span>(<span class="str">'active'</span>);
+
+  <span class="cmt">// Activate matching sidebar item</span>
+  document.<span class="fn">querySelectorAll</span>(<span class="str">'.nav-item'</span>).<span class="fn">forEach</span>(n => {
+    <span class="kw">if</span> (n.<span class="fn">getAttribute</span>(<span class="str">'onclick'</span>)?.<span class="fn">includes</span>(name)) n.classList.<span class="fn">add</span>(<span class="str">'active'</span>);
+  });
+
+  <span class="cmt">// Lazy-initialise charts only when the tab is first viewed</span>
+  <span class="fn">initChartsForTab</span>(name);
+}
+
+<span class="cmt">// ── Lazy chart initialisation map ─────────────────────────</span>
+<span class="kw">function</span> <span class="fn">initChartsForTab</span>(name) {
+  <span class="kw">if</span> (name === <span class="str">'dashboard'</span>)       { <span class="fn">initAlertTrendChart</span>(); <span class="fn">initSevPieChart</span>(); }
+  <span class="kw">if</span> (name === <span class="str">'vulnerabilities'</span>)  { <span class="fn">initPatchChart</span>(); }
+  <span class="kw">if</span> (name === <span class="str">'network'</span>)         { <span class="fn">initNetworkChart</span>(); <span class="fn">initFirewallChart</span>(); }
+  <span class="kw">if</span> (name === <span class="str">'ueba'</span>)            { <span class="fn">initUebaChart</span>(); }
+  <span class="kw">if</span> (name === <span class="str">'reports'</span>)         { <span class="fn">initMaturityChart</span>(); <span class="fn">initIncidentTrendChart</span>(); }
+}</div>
+      <button class="copy-btn" onclick="copyCode(this)">COPY</button>
+    </div>
+
+    <h3>CHART INSTANCE REGISTRY</h3>
+    <p>All Chart.js instances are stored in a global registry object to enable targeted updates and safe destruction before re-initialisation:</p>
+    <div class="cb-wrap">
+      <div class="code-block" data-lang="JAVASCRIPT">
+<span class="cmt">// Global chart registry — prevents Chart.js canvas reuse errors</span>
+<span class="kw">const</span> chartInstances = {};
+
+<span class="kw">function</span> <span class="fn">destroyChart</span>(id) {
+  <span class="kw">if</span> (chartInstances[id]) {
+    <span class="kw">try</span> { chartInstances[id].<span class="fn">destroy</span>(); } <span class="kw">catch</span>(e) {}
+    <span class="kw">delete</span> chartInstances[id];
+  }
+}
+
+<span class="cmt">// Usage pattern — always destroy before re-init</span>
+<span class="kw">function</span> <span class="fn">initAlertTrendChart</span>() {
+  <span class="kw">const</span> id = <span class="str">'alertTrendChart'</span>;
+  <span class="fn">destroyChart</span>(id);   <span class="cmt">// safe destroy</span>
+  chartInstances[id] = <span class="kw">new</span> Chart(document.<span class="fn">getElementById</span>(id), { <span class="cmt">/* config */</span> });
+}</div>
+      <button class="copy-btn" onclick="copyCode(this)">COPY</button>
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════════════════ 05 — MODULES -->
+  <section class="doc-section" id="modules">
+    <span class="section-eyebrow">// 05 — MODULE REGISTRY</span>
+    <h2 class="section-title">Enterprise Module<br>Registry v4.2.0</h2>
+
+    <div class="module-grid">
+      <div class="mod-doc-card">
+        <div class="mod-doc-num">MODULE 01 // TAB: dashboard</div>
+        <div class="mod-doc-name">THREAT INTELLIGENCE HUB</div>
+        <p style="font-size:12px;color:var(--text-2);margin-bottom:8px;line-height:1.7">Command-centre KPIs, 30-day alert trend sparkline (Chart.js line), severity doughnut, live threat event feed with MITRE ATT&CK tags, incident count badge.</p>
+        <div class="mod-doc-vars">
+          <span class="var-chip">alertTrendChart</span><span class="var-chip">sevPieChart</span><span class="var-chip">alertCount</span><span class="var-chip">liveClock</span>
+        </div>
+      </div>
+      <div class="mod-doc-card">
+        <div class="mod-doc-num">MODULE 02 // TAB: threats</div>
+        <div class="mod-doc-name">ACTIVE THREATS FEED</div>
+        <p style="font-size:12px;color:var(--text-2);margin-bottom:8px;line-height:1.7">Filterable live threat event table with severity badges, source IP, MITRE ATT&CK technique codes, IOC indicators, and analyst assignment controls.</p>
+        <div class="mod-doc-vars">
+          <span class="var-chip">threatFeed[]</span><span class="var-chip">filter-chips</span><span class="var-chip">sev-badges</span>
+        </div>
+      </div>
+      <div class="mod-doc-card">
+        <div class="mod-doc-num">MODULE 03 // TAB: incidents</div>
+        <div class="mod-doc-name">SOAR INCIDENT RESPONSE QUEUE</div>
+        <p style="font-size:12px;color:var(--text-2);margin-bottom:8px;line-height:1.7">SOAR-style incident queue with SLA countdown badges, P1–P4 priority tiers, assignment owner tracking, MITRE ATT&CK mapping, and status workflow.</p>
+        <div class="mod-doc-vars">
+          <span class="var-chip">incidentQueue[]</span><span class="var-chip">slaTimers{}</span><span class="var-chip">mitreMapping{}</span>
+        </div>
+      </div>
+      <div class="mod-doc-card">
+        <div class="mod-doc-num">MODULE 04 // TAB: alerts</div>
+        <div class="mod-doc-name">ALERT MANAGEMENT CENTRE</div>
+        <p style="font-size:12px;color:var(--text-2);margin-bottom:8px;line-height:1.7">Deduplicated alert management with rule source attribution, correlation engine tags, mute/acknowledge controls, and escalation pathways.</p>
+        <div class="mod-doc-vars">
+          <span class="var-chip">alertQueue[]</span><span class="var-chip">ruleEngine{}</span><span class="var-chip">correlations[]</span>
+        </div>
+      </div>
+      <div class="mod-doc-card">
+        <div class="mod-doc-num">MODULE 05 // TAB: vulnerabilities</div>
+        <div class="mod-doc-name">VULNERABILITY MANAGEMENT SUITE</div>
+        <p style="font-size:12px;color:var(--text-2);margin-bottom:8px;line-height:1.7">CVE inventory table with CVSS scores, affected asset counts, patch velocity bar chart (patched vs. new per month), risk score distribution.</p>
+        <div class="mod-doc-vars">
+          <span class="var-chip">patchChart</span><span class="var-chip">cveInventory[]</span><span class="var-chip">riskScores{}</span>
+        </div>
+      </div>
+      <div class="mod-doc-card">
+        <div class="mod-doc-num">MODULE 06 // TAB: assets</div>
+        <div class="mod-doc-name">ASSET INVENTORY TRACKER</div>
+        <p style="font-size:12px;color:var(--text-2);margin-bottom:8px;line-height:1.7">Full endpoint asset registry with OS classification, agent status indicators, risk scoring, and last-seen timestamps across all 4,847 monitored assets.</p>
+        <div class="mod-doc-vars">
+          <span class="var-chip">assetInventory[]</span><span class="var-chip">agentStatus{}</span><span class="var-chip">osBreakdown{}</span>
+        </div>
+      </div>
+      <div class="mod-doc-card">
+        <div class="mod-doc-num">MODULE 07 // TAB: ueba</div>
+        <div class="mod-doc-name">USER &amp; ENTITY BEHAVIOUR ANALYTICS</div>
+        <p style="font-size:12px;color:var(--text-2);margin-bottom:8px;line-height:1.7">Anomaly scoring leaderboard, insider-threat doughnut (Chart.js) by category — data access, auth anomaly, privilege abuse — with UEBA risk timeline.</p>
+        <div class="mod-doc-vars">
+          <span class="var-chip">uebaChart</span><span class="var-chip">anomalyScores[]</span><span class="var-chip">riskLeaderboard[]</span>
+        </div>
+      </div>
+      <div class="mod-doc-card">
+        <div class="mod-doc-num">MODULE 08 // TAB: network</div>
+        <div class="mod-doc-name">NETWORK OPERATIONS CENTER</div>
+        <p style="font-size:12px;color:var(--text-2);margin-bottom:8px;line-height:1.7">24h ingress/egress line chart, firewall block-reason horizontal bar chart, top-talker table, geo-threat map simulation, protocol distribution panels.</p>
+        <div class="mod-doc-vars">
+          <span class="var-chip">networkChart</span><span class="var-chip">firewallChart</span><span class="var-chip">topTalkers[]</span>
+        </div>
+      </div>
+      <div class="mod-doc-card">
+        <div class="mod-doc-num">MODULE 09 // TAB: compliance</div>
+        <div class="mod-doc-name">COMPLIANCE &amp; GOVERNANCE</div>
+        <p style="font-size:12px;color:var(--text-2);margin-bottom:8px;line-height:1.7">Six framework progress bars (NIST CSF, ISO 27001, SOC2, PCI-DSS, GDPR, HIPAA), critical gap findings table, security awareness training scores.</p>
+        <div class="mod-doc-vars">
+          <span class="var-chip">frameworkScores{}</span><span class="var-chip">gapFindings[]</span><span class="var-chip">trainingKPIs{}</span>
+        </div>
+      </div>
+      <div class="mod-doc-card">
+        <div class="mod-doc-num">MODULE 10 // TAB: hunting</div>
+        <div class="mod-doc-name">INTERACTIVE THREAT HUNT TERMINAL</div>
+        <p style="font-size:12px;color:var(--text-2);margin-bottom:8px;line-height:1.7">Fully interactive CLI terminal with live keyboard input, simulated query processing, pre-loaded hunt query library, 4,847-endpoint scan simulation.</p>
+        <div class="mod-doc-vars">
+          <span class="var-chip">terminalHistory[]</span><span class="var-chip">queryResponses{}</span><span class="var-chip">huntInput</span>
+        </div>
+      </div>
+      <div class="mod-doc-card">
+        <div class="mod-doc-num">MODULE 11 // TAB: reports</div>
+        <div class="mod-doc-name">EXECUTIVE SECURITY REPORT</div>
+        <p style="font-size:12px;color:var(--text-2);margin-bottom:8px;line-height:1.7">NIST CSF maturity radar (current vs. target, Chart.js), 12-month incident trend lines, executive KPI row (MTTD, MTTR, Risk Score, Budget), security roadmap timeline.</p>
+        <div class="mod-doc-vars">
+          <span class="var-chip">maturityChart</span><span class="var-chip">incidentTrendChart</span><span class="var-chip">execKPIs{}</span>
+        </div>
+      </div>
+    </div>
+
+    <h3>COMPLETE CHART INSTANCE REGISTRY</h3>
+    <table class="doc-table">
+      <tr><th>CHART ID</th><th>TYPE</th><th>TAB</th><th>INIT FUNCTION</th><th>DATASET VARS</th></tr>
+      <tr><td><code>alertTrendChart</code></td><td>line (3 datasets)</td><td>dashboard</td><td><code>initAlertTrendChart()</code></td><td>Critical / High / Medium 30-day arrays</td></tr>
+      <tr><td><code>sevPieChart</code></td><td>doughnut</td><td>dashboard</td><td><code>initSevPieChart()</code></td><td>data: [14,28,38,20]</td></tr>
+      <tr><td><code>patchChart</code></td><td>bar (grouped)</td><td>vulnerabilities</td><td><code>initPatchChart()</code></td><td>Patched[] vs NewVulns[] per month</td></tr>
+      <tr><td><code>networkChart</code></td><td>line (2 datasets)</td><td>network</td><td><code>initNetworkChart()</code></td><td>Ingress (GB) / Egress (GB) per 24h</td></tr>
+      <tr><td><code>firewallChart</code></td><td>horizontal bar</td><td>network</td><td><code>initFirewallChart()</code></td><td>Block reason counts [7 categories]</td></tr>
+      <tr><td><code>uebaChart</code></td><td>doughnut</td><td>ueba</td><td><code>initUebaChart()</code></td><td>Anomaly category split [5 types]</td></tr>
+      <tr><td><code>maturityChart</code></td><td>radar (2 datasets)</td><td>reports</td><td><code>initMaturityChart()</code></td><td>Current[6] vs Target[6] NIST domains</td></tr>
+      <tr><td><code>incidentTrendChart</code></td><td>line (2 datasets)</td><td>reports</td><td><code>initIncidentTrendChart()</code></td><td>Critical / High per month [12]</td></tr>
+    </table>
+  </section>
+
+  <!-- ═══════════════════════════════════════ 06 — DESIGN SYSTEM -->
+  <section class="doc-section" id="design-system">
+    <span class="section-eyebrow">// 06 — CSS DESIGN SYSTEM</span>
+    <h2 class="section-title">CSS Design Token<br>System Reference</h2>
+
+    <p>Sentinel Prime uses a <strong>comprehensive CSS Custom Properties system</strong> — 30+ design tokens controlling every visual aspect. Override any token in <code>:root</code> to instantly rebrand the entire UI.</p>
+
+    <h3>COLOUR PALETTE</h3>
+    <div class="token-grid">
+      <div class="token-item"><div class="token-swatch" style="background:#04060d"></div><div class="token-info"><div class="token-var">--bg-void</div><div class="token-hex">#04060d</div></div></div>
+      <div class="token-item"><div class="token-swatch" style="background:#07090f"></div><div class="token-info"><div class="token-var">--bg-base</div><div class="token-hex">#07090f</div></div></div>
+      <div class="token-item"><div class="token-swatch" style="background:#0c0f1a"></div><div class="token-info"><div class="token-var">--bg-surface</div><div class="token-hex">#0c0f1a</div></div></div>
+      <div class="token-item"><div class="token-swatch" style="background:#111422"></div><div class="token-info"><div class="token-var">--bg-elevated</div><div class="token-hex">#111422</div></div></div>
+      <div class="token-item"><div class="token-swatch" style="background:#161a2a"></div><div class="token-info"><div class="token-var">--bg-panel</div><div class="token-hex">#161a2a</div></div></div>
+      <div class="token-item"><div class="token-swatch" style="background:#1c2133"></div><div class="token-info"><div class="token-var">--bg-hover</div><div class="token-hex">#1c2133</div></div></div>
+      <div class="token-item"><div class="token-swatch" style="background:#00d4ff;box-shadow:0 0 8px #00d4ff"></div><div class="token-info"><div class="token-var">--cyan</div><div class="token-hex">#00d4ff — primary accent</div></div></div>
+      <div class="token-item"><div class="token-swatch" style="background:#00ff88;box-shadow:0 0 8px #00ff88"></div><div class="token-info"><div class="token-var">--green</div><div class="token-hex">#00ff88 — success / safe</div></div></div>
+      <div class="token-item"><div class="token-swatch" style="background:#ff3355;box-shadow:0 0 8px #ff3355"></div><div class="token-info"><div class="token-var">--red</div><div class="token-hex">#ff3355 — critical / error</div></div></div>
+      <div class="token-item"><div class="token-swatch" style="background:#ffaa00;box-shadow:0 0 8px #ffaa00"></div><div class="token-info"><div class="token-var">--amber</div><div class="token-hex">#ffaa00 — high / warning</div></div></div>
+      <div class="token-item"><div class="token-swatch" style="background:#9966ff;box-shadow:0 0 8px #9966ff"></div><div class="token-info"><div class="token-var">--purple</div><div class="token-hex">#9966ff — UEBA accent</div></div></div>
+      <div class="token-item"><div class="token-swatch" style="background:#2277ff;box-shadow:0 0 8px #2277ff"></div><div class="token-info"><div class="token-var">--blue</div><div class="token-hex">#2277ff — informational</div></div></div>
+    </div>
+
+    <h3>FULL TOKEN REFERENCE</h3>
+    <div class="cb-wrap">
+      <div class="code-block" data-lang="CSS">
+:root {
+  <span class="cmt">/* ── BACKGROUND DEPTH SYSTEM (6 layers) ── */</span>
+  --bg-void:      <span class="str">#04060d</span>;   <span class="cmt">/* Deepest background — page root */</span>
+  --bg-base:      <span class="str">#07090f</span>;   <span class="cmt">/* Primary page background */</span>
+  --bg-surface:   <span class="str">#0c0f1a</span>;   <span class="cmt">/* Card / panel base surface */</span>
+  --bg-elevated:  <span class="str">#111422</span>;   <span class="cmt">/* Elevated panels / hover state */</span>
+  --bg-panel:     <span class="str">#161a2a</span>;   <span class="cmt">/* Module panel backgrounds */</span>
+  --bg-hover:     <span class="str">#1c2133</span>;   <span class="cmt">/* Interactive hover state */</span>
+
+  <span class="cmt">/* ── PRIMARY ACCENT — CYAN ── */</span>
+  --cyan:         <span class="str">#00d4ff</span>;   <span class="cmt">/* Primary brand / active colour */</span>
+  --cyan-dim:     <span class="str">#0099bb</span>;   <span class="cmt">/* Dimmed — borders, scrollbar */</span>
+  --cyan-glow:    <span class="str">rgba(0,212,255,0.15)</span>;
+
+  <span class="cmt">/* ── STATUS COLOURS ── */</span>
+  --green:        <span class="str">#00ff88</span>;   <span class="cmt">/* Success / low severity */</span>
+  --green-dim:    <span class="str">#00bb66</span>;
+  --green-glow:   <span class="str">rgba(0,255,136,0.12)</span>;
+  --red:          <span class="str">#ff3355</span>;   <span class="cmt">/* Critical / error */</span>
+  --red-dim:      <span class="str">#cc1133</span>;
+  --red-glow:     <span class="str">rgba(255,51,85,0.15)</span>;
+  --amber:        <span class="str">#ffaa00</span>;   <span class="cmt">/* High / warning */</span>
+  --amber-dim:    <span class="str">#cc8800</span>;
+  --amber-glow:   <span class="str">rgba(255,170,0,0.12)</span>;
+  --purple:       <span class="str">#9966ff</span>;   <span class="cmt">/* UEBA / behaviour analytics */</span>
+  --purple-dim:   <span class="str">#7744cc</span>;
+  --purple-glow:  <span class="str">rgba(153,102,255,0.12)</span>;
+  --blue:         <span class="str">#2277ff</span>;   <span class="cmt">/* Informational / network */</span>
+
+  <span class="cmt">/* ── TEXT HIERARCHY (4 levels) ── */</span>
+  --text-primary:   <span class="str">#e8eaf2</span>;  <span class="cmt">/* Primary readable text */</span>
+  --text-secondary: <span class="str">#8b9abf</span>;  <span class="cmt">/* Secondary / descriptive */</span>
+  --text-muted:     <span class="str">#4a5472</span>;  <span class="cmt">/* Timestamps / labels */</span>
+  --text-mono:      <span class="str">#00d4ff</span>;  <span class="cmt">/* Monospace accent (= --cyan) */</span>
+
+  <span class="cmt">/* ── BORDERS ── */</span>
+  --border-glow:  <span class="str">rgba(0,212,255,0.25)</span>;  <span class="cmt">/* Active / highlighted panels */</span>
+  --border-base:  <span class="str">rgba(255,255,255,0.06)</span>; <span class="cmt">/* Subtle dividers */</span>
+  --border-med:   <span class="str">rgba(255,255,255,0.10)</span>; <span class="cmt">/* Medium emphasis borders */</span>
+
+  <span class="cmt">/* ── TYPOGRAPHY ── */</span>
+  --font-ui:      <span class="str">'Rajdhani'</span>, sans-serif;       <span class="cmt">/* Body, labels, descriptions */</span>
+  --font-mono:    <span class="str">'Share Tech Mono'</span>, monospace;  <span class="cmt">/* Data, tags, codes, terminal */</span>
+  --font-display: <span class="str">'Orbitron'</span>, sans-serif;       <span class="cmt">/* Module titles, KPI values */</span>
+
+  <span class="cmt">/* ── BORDER RADIUS ── */</span>
+  --radius-sm: <span class="str">3px</span>;
+  --radius-md: <span class="str">6px</span>;
+  --radius-lg: <span class="str">10px</span>;
+}</div>
+      <button class="copy-btn" onclick="copyCode(this)">COPY</button>
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════════════════ 07 — DATA BINDING -->
+  <section class="doc-section" id="data-binding">
+    <span class="section-eyebrow">// 07 — DATA BINDING LAYER</span>
+    <h2 class="section-title">Data Binding Architecture<br>&amp; Variable Reference</h2>
+
+    <p>Every data element in Sentinel Prime is bound to a named JavaScript variable. Replacing mock data with real API responses requires only identifying the variable name and calling the appropriate update function. No rebuilding, no recompiling.</p>
+
+    <h3>CHART.JS DATASET UPDATE PATTERN</h3>
+    <div class="cb-wrap">
+      <div class="code-block" data-lang="JAVASCRIPT">
+<span class="cmt">// Universal chart refresh pattern — works for ALL 8 chart instances</span>
+<span class="kw">async function</span> <span class="fn">refreshChartData</span>(chartId, apiEndpoint, authToken) {
+  <span class="kw">try</span> {
+    <span class="kw">const</span> res = <span class="kw">await</span> <span class="fn">fetch</span>(apiEndpoint, {
+      headers: {
+        <span class="str">'Authorization'</span>: <span class="str">`Bearer ${authToken}`</span>,
+        <span class="str">'Content-Type'</span>: <span class="str">'application/json'</span>
+      }
+    });
+    <span class="kw">if</span> (!res.<span class="fn">ok</span>) <span class="kw">throw new</span> <span class="fn">Error</span>(<span class="str">`HTTP ${res.status}`</span>);
+    <span class="kw">const</span> data = <span class="kw">await</span> res.<span class="fn">json</span>();
+
+    <span class="kw">const</span> chart = chartInstances[chartId];
+    <span class="kw">if</span> (!chart) <span class="kw">return</span>;
+
+    chart.data.labels            = data.labels;
+    chart.data.datasets[<span class="num">0</span>].data  = data.values;
+
+    chart.<span class="fn">update</span>(<span class="str">'active'</span>); <span class="cmt">// smooth animated transition</span>
+  } <span class="kw">catch</span> (err) {
+    console.<span class="fn">error</span>(<span class="str">`[SENTINEL] Chart ${chartId} refresh failed:`</span>, err);
+    <span class="cmt">// Falls back to last known good data — no visual disruption</span>
+  }
+}
+
+<span class="cmt">// Refresh alert trend every 30 seconds</span>
+<span class="fn">setInterval</span>(() => <span class="fn">refreshChartData</span>(<span class="str">'alertTrendChart'</span>, <span class="str">'/api/alerts/trend'</span>, AUTH_TOKEN), <span class="num">30000</span>);</div>
+      <button class="copy-btn" onclick="copyCode(this)">COPY</button>
+    </div>
+
+    <h3>KPI COUNTER ANIMATED UPDATE</h3>
+    <div class="cb-wrap">
+      <div class="code-block" data-lang="JAVASCRIPT">
+<span class="cmt">// Animated count-up for KPI values — visual emphasis on change</span>
+<span class="kw">function</span> <span class="fn">updateKPI</span>(elementId, newValue, prevValue = <span class="num">0</span>) {
+  <span class="kw">const</span> el = document.<span class="fn">getElementById</span>(elementId);
+  <span class="kw">if</span> (!el) <span class="kw">return</span>;
+
+  <span class="kw">const</span> diff = newValue - prevValue;
+  <span class="kw">const</span> steps = <span class="num">30</span>;
+  <span class="kw">const</span> step = diff / steps;
+  <span class="kw">let</span> current = prevValue;
+  <span class="kw">let</span> count = <span class="num">0</span>;
+
+  <span class="kw">const</span> timer = <span class="fn">setInterval</span>(() => {
+    current += step;
+    count++;
+    el.textContent = Math.<span class="fn">round</span>(current).<span class="fn">toLocaleString</span>();
+    <span class="kw">if</span> (count >= steps) {
+      el.textContent = newValue.<span class="fn">toLocaleString</span>();
+      <span class="fn">clearInterval</span>(timer);
+    }
+  }, <span class="num">20</span>);
+
+  <span class="cmt">// Flash colour on change</span>
+  el.style.color = diff > <span class="num">0</span> ? <span class="str">'var(--red)'</span> : <span class="str">'var(--green)'</span>;
+  <span class="fn">setTimeout</span>(() => el.style.color = <span class="str">''</span>, <span class="num">3000</span>);
+}
+
+<span class="cmt">// Usage</span>
+<span class="fn">updateKPI</span>(<span class="str">'alertCount'</span>, <span class="num">27</span>, <span class="num">23</span>);   <span class="cmt">// topbar badge — 23 → 27</span></div>
+      <button class="copy-btn" onclick="copyCode(this)">COPY</button>
+    </div>
+
+    <h3>THREAT TABLE ROW INJECTION</h3>
+    <div class="cb-wrap">
+      <div class="code-block" data-lang="JAVASCRIPT">
+<span class="cmt">// Prepend new threat event to live feed table (Module 01 / Module 02)</span>
+<span class="kw">function</span> <span class="fn">prependThreatRow</span>({ timestamp, severity, sourceIP, indicator, mitre, status }) {
+  <span class="kw">const</span> tbody = document.<span class="fn">getElementById</span>(<span class="str">'threat-feed-body'</span>);
+  <span class="kw">if</span> (!tbody) <span class="kw">return</span>;
+
+  <span class="kw">const</span> sevClass = { CRITICAL: <span class="str">'sev-critical'</span>, HIGH: <span class="str">'sev-high'</span>, MEDIUM: <span class="str">'sev-medium'</span>, LOW: <span class="str">'sev-low'</span> };
+  <span class="kw">const</span> sevColour = { CRITICAL: <span class="str">'var(--red)'</span>, HIGH: <span class="str">'var(--amber)'</span>, MEDIUM: <span class="str">'var(--cyan)'</span>, LOW: <span class="str">'var(--green)'</span> };
+
+  <span class="kw">const</span> row = document.<span class="fn">createElement</span>(<span class="str">'tr'</span>);
+  row.innerHTML = <span class="str">`
+    &lt;td style="color:var(--text-muted)"&gt;${timestamp}&lt;/td&gt;
+    &lt;td&gt;&lt;span class="sev ${sevClass[severity] || ''}"&gt;${severity}&lt;/span&gt;&lt;/td&gt;
+    &lt;td&gt;${sourceIP}&lt;/td&gt;
+    &lt;td&gt;${indicator}&lt;/td&gt;
+    &lt;td style="color:var(--text-muted)"&gt;${mitre}&lt;/td&gt;
+    &lt;td style="color:${sevColour[severity] || 'var(--text-primary)'}"&gt;${status}&lt;/td&gt;
+  `</span>;
+
+  row.style.background = <span class="str">'rgba(0,212,255,0.06)'</span>;
+  tbody.<span class="fn">insertBefore</span>(row, tbody.firstChild);
+  <span class="kw">while</span> (tbody.rows.length > <span class="num">50</span>) tbody.<span class="fn">deleteRow</span>(-<span class="num">1</span>);
+  <span class="fn">setTimeout</span>(() => row.style.background = <span class="str">''</span>, <span class="num">2000</span>);
+}</div>
+      <button class="copy-btn" onclick="copyCode(this)">COPY</button>
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════════════════ 08 — API INTEGRATION -->
+  <section class="doc-section" id="api-integration">
+    <span class="section-eyebrow">// 08 — API INTEGRATION</span>
+    <h2 class="section-title">SIEM API Integration<br>Blueprints</h2>
+
+    <div class="callout info">
+      <span class="callout-label">// ARCHITECTURE NOTE</span>
+      All integration blueprints follow the same pattern: fetch from your SIEM REST endpoint → normalise response to Sentinel Prime's data shape → call <code>chart.update()</code> or a DOM update function. No structural changes to the UI kit are required.
+    </div>
+
+    <h3>SPLUNK REST API</h3>
+    <div class="cb-wrap">
+      <div class="code-block" data-lang="JAVASCRIPT">
+<span class="kw">const</span> SPLUNK_BASE  = <span class="str">'https://splunk.enterprise.local:8089'</span>;
+<span class="kw">const</span> SPLUNK_TOKEN = <span class="str">'Splunk YOUR_HEC_TOKEN_HERE'</span>;
+
+<span class="kw">async function</span> <span class="fn">fetchSplunkAlertTrend</span>() {
+  <span class="cmt">// Step 1 — Create search job</span>
+  <span class="kw">const</span> jobRes = <span class="kw">await</span> <span class="fn">fetch</span>(<span class="str">`${SPLUNK_BASE}/services/search/jobs`</span>, {
+    method: <span class="str">'POST'</span>,
+    headers: { <span class="str">'Authorization'</span>: SPLUNK_TOKEN, <span class="str">'Accept'</span>: <span class="str">'application/json'</span> },
+    body: <span class="kw">new</span> <span class="fn">URLSearchParams</span>({
+      search: <span class="str">'search index=security | timechart count by severity span=1d earliest=-30d'</span>,
+      output_mode: <span class="str">'json'</span>, exec_mode: <span class="str">'blocking'</span>
+    })
+  });
+  <span class="kw">const</span> { sid } = <span class="kw">await</span> jobRes.<span class="fn">json</span>();
+
+  <span class="cmt">// Step 2 — Retrieve results</span>
+  <span class="kw">const</span> resultRes = <span class="kw">await</span> <span class="fn">fetch</span>(
+    <span class="str">`${SPLUNK_BASE}/services/search/jobs/${sid}/results?output_mode=json`</span>,
+    { headers: { <span class="str">'Authorization'</span>: SPLUNK_TOKEN } }
+  );
+  <span class="kw">const</span> { results } = <span class="kw">await</span> resultRes.<span class="fn">json</span>();
+
+  <span class="cmt">// Step 3 — Bind to alertTrendChart</span>
+  <span class="kw">const</span> chart = chartInstances[<span class="str">'alertTrendChart'</span>];
+  chart.data.labels              = results.<span class="fn">map</span>(r => r._time.<span class="fn">slice</span>(<span class="num">5</span>,<span class="num">10</span>));
+  chart.data.datasets[<span class="num">0</span>].data   = results.<span class="fn">map</span>(r => +r.critical || <span class="num">0</span>);
+  chart.data.datasets[<span class="num">1</span>].data   = results.<span class="fn">map</span>(r => +r.high || <span class="num">0</span>);
+  chart.data.datasets[<span class="num">2</span>].data   = results.<span class="fn">map</span>(r => +r.medium || <span class="num">0</span>);
+  chart.<span class="fn">update</span>(<span class="str">'active'</span>);
+}
+
+<span class="fn">setInterval</span>(fetchSplunkAlertTrend, <span class="num">60000</span>);</div>
+      <button class="copy-btn" onclick="copyCode(this)">COPY</button>
+    </div>
+
+    <h3>MICROSOFT SENTINEL (AZURE)</h3>
+    <div class="cb-wrap">
+      <div class="code-block" data-lang="JAVASCRIPT">
+<span class="kw">const</span> AZURE = {
+  tenantId:      <span class="str">'YOUR_TENANT_ID'</span>,
+  subscriptionId:<span class="str">'YOUR_SUBSCRIPTION_ID'</span>,
+  resourceGroup: <span class="str">'YOUR_RESOURCE_GROUP'</span>,
+  workspace:     <span class="str">'YOUR_WORKSPACE_NAME'</span>,
+  bearerToken:   <span class="str">'YOUR_BEARER_TOKEN'</span>  <span class="cmt">// from MSAL / az cli</span>
+};
+
+<span class="kw">async function</span> <span class="fn">fetchSentinelIncidents</span>() {
+  <span class="kw">const</span> base = <span class="str">`https://management.azure.com/subscriptions/${AZURE.subscriptionId}`</span>
+             + <span class="str">`/resourceGroups/${AZURE.resourceGroup}`</span>
+             + <span class="str">`/providers/Microsoft.OperationalInsights/workspaces/${AZURE.workspace}`</span>
+             + <span class="str">`/providers/Microsoft.SecurityInsights`</span>;
+
+  <span class="kw">const</span> res = <span class="kw">await</span> <span class="fn">fetch</span>(
+    <span class="str">`${base}/incidents?api-version=2023-11-01&$filter=properties/status ne 'Closed'&$top=50`</span>,
+    { headers: { <span class="str">'Authorization'</span>: <span class="str">`Bearer ${AZURE.bearerToken}`</span> } }
+  );
+  <span class="kw">const</span> { value } = <span class="kw">await</span> res.<span class="fn">json</span>();
+
+  <span class="cmt">// Normalise to Sentinel Prime incident queue format</span>
+  <span class="kw">const</span> incidents = value.<span class="fn">map</span>(inc => ({
+    id:       inc.name,
+    title:    inc.properties.title,
+    severity: inc.properties.severity.<span class="fn">toUpperCase</span>(),
+    status:   inc.properties.status.<span class="fn">toUpperCase</span>(),
+    created:  inc.properties.createdTimeUtc,
+    assignee: inc.properties.owner?.assignedTo || <span class="str">'UNASSIGNED'</span>,
+    mitre:    inc.properties.additionalData?.techniques || []
+  }));
+
+  <span class="fn">renderIncidentQueue</span>(incidents); <span class="cmt">// update Module 03 DOM</span>
+}</div>
+      <button class="copy-btn" onclick="copyCode(this)">COPY</button>
+    </div>
+
+    <h3>ELASTIC SIEM (ELASTICSEARCH)</h3>
+    <div class="cb-wrap">
+      <div class="code-block" data-lang="JAVASCRIPT">
+<span class="kw">const</span> ELASTIC_BASE    = <span class="str">'https://elastic.enterprise.local:9200'</span>;
+<span class="kw">const</span> ELASTIC_API_KEY = <span class="str">'YOUR_BASE64_ENCODED_API_KEY'</span>;
+
+<span class="kw">async function</span> <span class="fn">fetchElasticAlerts</span>() {
+  <span class="kw">const</span> res = <span class="kw">await</span> <span class="fn">fetch</span>(
+    <span class="str">`${ELASTIC_BASE}/.alerts-security.alerts-*/_search`</span>,
+    {
+      method: <span class="str">'POST'</span>,
+      headers: {
+        <span class="str">'Authorization'</span>: <span class="str">`ApiKey ${ELASTIC_API_KEY}`</span>,
+        <span class="str">'Content-Type'</span>: <span class="str">'application/json'</span>
+      },
+      body: JSON.<span class="fn">stringify</span>({
+        size: <span class="num">50</span>,
+        sort: [{ <span class="str">'@timestamp'</span>: { order: <span class="str">'desc'</span> } }],
+        query: {
+          bool: {
+            filter: [
+              { term:  { <span class="str">'kibana.alert.status'</span>: <span class="str">'active'</span> } },
+              { range: { <span class="str">'@timestamp'</span>: { gte: <span class="str">'now-24h'</span> } } }
+            ]
+          }
+        }
+      })
+    }
+  );
+  <span class="kw">const</span> data = <span class="kw">await</span> res.<span class="fn">json</span>();
+  data.hits.hits.<span class="fn">forEach</span>(h => {
+    <span class="kw">const</span> s = h._source;
+    <span class="fn">prependThreatRow</span>({
+      timestamp: <span class="kw">new</span> <span class="fn">Date</span>(s[<span class="str">'@timestamp'</span>]).<span class="fn">toLocaleString</span>(),
+      severity:  (s[<span class="str">'kibana.alert.severity'</span>] || <span class="str">'MEDIUM'</span>).<span class="fn">toUpperCase</span>(),
+      sourceIP:  s[<span class="str">'source.ip'</span>] || <span class="str">'N/A'</span>,
+      indicator: s[<span class="str">'kibana.alert.rule.name'</span>],
+      mitre:     s[<span class="str">'kibana.alert.rule.threat'</span>]?.[<span class="num">0</span>]?.technique?.[<span class="num">0</span>]?.id || <span class="str">'—'</span>,
+      status:    <span class="str">'OPEN'</span>
+    });
+  });
+}
+
+<span class="fn">setInterval</span>(fetchElasticAlerts, <span class="num">30000</span>);</div>
+      <button class="copy-btn" onclick="copyCode(this)">COPY</button>
+    </div>
+
+    <h3>CROWDSTRIKE FALCON API</h3>
+    <div class="cb-wrap">
+      <div class="code-block" data-lang="JAVASCRIPT">
+<span class="kw">const</span> FALCON_BASE = <span class="str">'https://api.crowdstrike.com'</span>;
+<span class="kw">let</span>   FALCON_TOKEN = <span class="str">''</span>;
+
+<span class="kw">async function</span> <span class="fn">getFalconToken</span>(clientId, clientSecret) {
+  <span class="kw">const</span> res = <span class="kw">await</span> <span class="fn">fetch</span>(<span class="str">`${FALCON_BASE}/oauth2/token`</span>, {
+    method: <span class="str">'POST'</span>,
+    headers: { <span class="str">'Content-Type'</span>: <span class="str">'application/x-www-form-urlencoded'</span> },
+    body: <span class="str">`client_id=${clientId}&client_secret=${clientSecret}`</span>
+  });
+  <span class="kw">const</span> { access_token } = <span class="kw">await</span> res.<span class="fn">json</span>();
+  FALCON_TOKEN = access_token;
+  <span class="fn">setTimeout</span>(getFalconToken, <span class="num">28</span> * <span class="num">60</span> * <span class="num">1000</span>); <span class="cmt">// refresh every 28 min</span>
+}
+
+<span class="kw">async function</span> <span class="fn">fetchFalconDetections</span>() {
+  <span class="kw">const</span> idsRes = <span class="kw">await</span> <span class="fn">fetch</span>(
+    <span class="str">`${FALCON_BASE}/detects/queries/detects/v1?sort=created_timestamp.desc&limit=50`</span>,
+    { headers: { <span class="str">'Authorization'</span>: <span class="str">`Bearer ${FALCON_TOKEN}`</span> } }
+  );
+  <span class="kw">const</span> { resources: ids } = <span class="kw">await</span> idsRes.<span class="fn">json</span>();
+
+  <span class="kw">const</span> detailRes = <span class="kw">await</span> <span class="fn">fetch</span>(<span class="str">`${FALCON_BASE}/detects/entities/summaries/GET/v1`</span>, {
+    method: <span class="str">'POST'</span>,
+    headers: { <span class="str">'Authorization'</span>: <span class="str">`Bearer ${FALCON_TOKEN}`</span>, <span class="str">'Content-Type'</span>: <span class="str">'application/json'</span> },
+    body: JSON.<span class="fn">stringify</span>({ ids })
+  });
+  <span class="kw">const</span> { resources } = <span class="kw">await</span> detailRes.<span class="fn">json</span>();
+
+  resources.<span class="fn">forEach</span>(d => <span class="fn">prependThreatRow</span>({
+    timestamp: <span class="kw">new</span> <span class="fn">Date</span>(d.created_timestamp).<span class="fn">toLocaleString</span>(),
+    severity:  d.max_severity_displayname.<span class="fn">toUpperCase</span>(),
+    sourceIP:  d.device?.local_ip || <span class="str">'N/A'</span>,
+    indicator: d.behaviors?.[<span class="num">0</span>]?.scenario || d.detection_id,
+    mitre:     d.behaviors?.[<span class="num">0</span>]?.technique_id || <span class="str">'—'</span>,
+    status:    d.status.<span class="fn">toUpperCase</span>()
+  }));
+}</div>
+      <button class="copy-btn" onclick="copyCode(this)">COPY</button>
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════════════════ 09 — WEBSOCKET -->
+  <section class="doc-section" id="websocket">
+    <span class="section-eyebrow">// 09 — WEBSOCKET INTEGRATION</span>
+    <h2 class="section-title">Real-Time WebSocket<br>Stream Manager</h2>
+
+    <div class="cb-wrap">
+      <div class="code-block" data-lang="JAVASCRIPT">
+<span class="cmt">/* ═══════════════════════════════════════════════════════
+   SentinelWSManager — drop-in real-time stream manager
+   Replaces all setInterval polling with live push events
+═══════════════════════════════════════════════════════ */</span>
+<span class="kw">class</span> <span class="fn">SentinelWSManager</span> {
+  <span class="fn">constructor</span>(wsUrl, authToken) {
+    this.url            = wsUrl;
+    this.token          = authToken;
+    this.ws             = <span class="kw">null</span>;
+    this.reconnectDelay = <span class="num">3000</span>;
+    this.maxRetries     = <span class="num">10</span>;
+    this.retryCount     = <span class="num">0</span>;
+    this.<span class="fn">connect</span>();
+  }
+
+  <span class="fn">connect</span>() {
+    this.ws = <span class="kw">new</span> <span class="fn">WebSocket</span>(<span class="str">`${this.url}?token=${this.token}`</span>);
+
+    this.ws.<span class="fn">onopen</span> = () => {
+      this.retryCount = <span class="num">0</span>;
+      console.<span class="fn">log</span>(<span class="str">'[SENTINEL WS] Stream connected'</span>);
+      <span class="fn">updateTopbarStatus</span>(<span class="str">'green'</span>, <span class="str">'SIEM LIVE'</span>);
+    };
+
+    this.ws.<span class="fn">onmessage</span> = ({ data }) => {
+      <span class="kw">try</span> { this.<span class="fn">dispatch</span>(JSON.<span class="fn">parse</span>(data)); }
+      <span class="kw">catch</span>(e) { console.<span class="fn">warn</span>(<span class="str">'[SENTINEL WS] Bad message'</span>, e); }
+    };
+
+    this.ws.<span class="fn">onclose</span> = () => {
+      <span class="fn">updateTopbarStatus</span>(<span class="str">'amber'</span>, <span class="str">'RECONNECTING'</span>);
+      <span class="kw">if</span> (this.retryCount < this.maxRetries) {
+        this.retryCount++;
+        <span class="fn">setTimeout</span>(() => this.<span class="fn">connect</span>(), this.reconnectDelay * this.retryCount);
+      } <span class="kw">else</span> { <span class="fn">updateTopbarStatus</span>(<span class="str">'red'</span>, <span class="str">'STREAM OFFLINE'</span>); }
+    };
+
+    this.ws.<span class="fn">onerror</span> = () => <span class="fn">updateTopbarStatus</span>(<span class="str">'red'</span>, <span class="str">'STREAM ERROR'</span>);
+  }
+
+  <span class="fn">dispatch</span>(msg) {
+    <span class="kw">switch</span>(msg.type) {
+      <span class="kw">case</span> <span class="str">'alert'</span>:
+        <span class="fn">prependThreatRow</span>(msg.payload);
+        <span class="fn">updateKPI</span>(<span class="str">'alertCount'</span>, +document.<span class="fn">getElementById</span>(<span class="str">'alertCount'</span>).textContent + <span class="num">1</span>);
+        <span class="kw">break</span>;
+      <span class="kw">case</span> <span class="str">'incident'</span>:
+        <span class="fn">renderIncidentQueue</span>(msg.payload);
+        <span class="kw">break</span>;
+      <span class="kw">case</span> <span class="str">'network_stats'</span>:
+        <span class="fn">pushNetworkPoint</span>(msg.payload);
+        <span class="kw">break</span>;
+      <span class="kw">case</span> <span class="str">'chart_update'</span>:
+        <span class="kw">const</span> c = chartInstances[msg.chartId];
+        <span class="kw">if</span> (c) { c.data.labels = msg.labels; c.data.datasets[<span class="num">0</span>].data = msg.values; c.<span class="fn">update</span>(<span class="str">'active'</span>); }
+        <span class="kw">break</span>;
+      <span class="kw">case</span> <span class="str">'kpi_update'</span>:
+        Object.<span class="fn">entries</span>(msg.kpis).<span class="fn">forEach</span>(([id,val]) => <span class="fn">updateKPI</span>(id, val));
+        <span class="kw">break</span>;
+      default:
+        console.<span class="fn">warn</span>(<span class="str">`[SENTINEL WS] Unknown type: ${msg.type}`</span>);
+    }
+  }
+
+  <span class="fn">send</span>(payload) {
+    <span class="kw">if</span> (this.ws?.readyState === WebSocket.OPEN) this.ws.<span class="fn">send</span>(JSON.<span class="fn">stringify</span>(payload));
+  }
+
+  <span class="fn">close</span>() { this.maxRetries = <span class="num">0</span>; this.ws?.<span class="fn">close</span>(); }
+}
+
+<span class="cmt">// Initialise</span>
+<span class="kw">const</span> sentinelStream = <span class="kw">new</span> <span class="fn">SentinelWSManager</span>(
+  <span class="str">'wss://siem.enterprise.io/realtime'</span>,
+  <span class="str">'YOUR_WS_AUTH_TOKEN'</span>
+);</div>
+      <button class="copy-btn" onclick="copyCode(this)">COPY</button>
+    </div>
+
+    <h3>EXPECTED SERVER MESSAGE SCHEMA</h3>
+    <div class="event-stream">
+      <div class="event-line"><span class="event-ts">→ </span><span class="event-type">{ type: "alert",</span>         <span class="event-payload"> payload: { timestamp, severity, sourceIP, indicator, mitre, status } }</span></div>
+      <div class="event-line"><span class="event-ts">→ </span><span class="event-type">{ type: "incident",</span>      <span class="event-payload"> payload: [ { id, title, severity, status, created, assignee, mitre[] } ] }</span></div>
+      <div class="event-line"><span class="event-ts">→ </span><span class="event-type">{ type: "network_stats",</span> <span class="event-payload"> payload: { timestamp, ingress_gb, egress_gb } }</span></div>
+      <div class="event-line"><span class="event-ts">→ </span><span class="event-type">{ type: "chart_update",</span>  <span class="event-payload"> chartId: "alertTrendChart", labels: [], values: [] }</span></div>
+      <div class="event-line"><span class="event-ts">→ </span><span class="event-type">{ type: "kpi_update",</span>    <span class="event-payload"> kpis: { alertCount: 27, openIncidents: 8 } }</span></div>
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════════════════ 10 — CHART.JS REFERENCE -->
+  <section class="doc-section" id="chartjs">
+    <span class="section-eyebrow">// 10 — CHART.JS REFERENCE</span>
+    <h2 class="section-title">Chart.js v4.4.1<br>Configuration Reference</h2>
+
+    <p>All 8 chart instances share consistent theming. The pattern below shows the full theming options applied to each chart type in Sentinel Prime.</p>
+
+    <h4>SHARED CHART DEFAULTS</h4>
+    <div class="cb-wrap">
+      <div class="code-block" data-lang="JAVASCRIPT">
+<span class="cmt">// Apply global defaults once — affects all Chart.js instances</span>
+Chart.defaults.color               = <span class="str">'#4a5472'</span>;
+Chart.defaults.font.family         = <span class="str">'Share Tech Mono'</span>;
+Chart.defaults.plugins.legend.display = <span class="kw">false</span>;
+Chart.defaults.animation.duration  = <span class="num">400</span>;
+
+<span class="cmt">// Shared scale config (reuse across charts)</span>
+<span class="kw">const</span> SCALE_DEFAULTS = {
+  grid:   { color: <span class="str">'rgba(255,255,255,0.04)'</span> },
+  border: { color: <span class="str">'rgba(255,255,255,0.06)'</span> },
+  ticks:  { color: <span class="str">'#4a5472'</span>, font: { family: <span class="str">'Share Tech Mono'</span>, size: <span class="num">9</span> } }
+};</div>
+      <button class="copy-btn" onclick="copyCode(this)">COPY</button>
+    </div>
+
+    <h4>PUSH NEW DATA POINT (SLIDING WINDOW)</h4>
+    <div class="cb-wrap">
+      <div class="code-block" data-lang="JAVASCRIPT">
+<span class="cmt">// Push a new data point with sliding window (keeps last N points)</span>
+<span class="kw">function</span> <span class="fn">pushNetworkPoint</span>({ timestamp, ingress_gb, egress_gb }, maxPoints = <span class="num">24</span>) {
+  <span class="kw">const</span> chart = chartInstances[<span class="str">'networkChart'</span>];
+  <span class="kw">if</span> (!chart) <span class="kw">return</span>;
+
+  chart.data.labels.<span class="fn">push</span>(timestamp);
+  chart.data.datasets[<span class="num">0</span>].data.<span class="fn">push</span>(ingress_gb);
+  chart.data.datasets[<span class="num">1</span>].data.<span class="fn">push</span>(egress_gb);
+
+  <span class="kw">if</span> (chart.data.labels.length > maxPoints) {
+    chart.data.labels.<span class="fn">shift</span>();
+    chart.data.datasets.<span class="fn">forEach</span>(ds => ds.data.<span class="fn">shift</span>());
+  }
+
+  chart.<span class="fn">update</span>(<span class="str">'none'</span>); <span class="cmt">// 'none' = no animation (faster for live data)</span>
+}</div>
+      <button class="copy-btn" onclick="copyCode(this)">COPY</button>
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════════════════ 11 — STATIC DEPLOY -->
+  <section class="doc-section" id="deploy-static">
+    <span class="section-eyebrow">// 11 — STATIC FILE SERVER</span>
+    <h2 class="section-title">Nginx Static File<br>Server Configuration</h2>
+
+    <div class="cb-wrap">
+      <div class="code-block" data-lang="NGINX">
+<span class="cmt"># /etc/nginx/sites-available/sentinel-prime</span>
+server {
+    <span class="kw">listen</span> 443 ssl http2;
+    <span class="kw">server_name</span> sentinel.enterprise.io;
+
+    <span class="kw">root</span>  /var/www/sentinel_prime;
+    <span class="kw">index</span> index.html sentinel_prime.html;
+
+    <span class="kw">ssl_certificate</span>     /etc/ssl/certs/sentinel.crt;
+    <span class="kw">ssl_certificate_key</span> /etc/ssl/private/sentinel.key;
+    <span class="kw">ssl_protocols</span>       TLSv1.2 TLSv1.3;
+
+    <span class="cmt"># Security headers</span>
+    <span class="kw">add_header</span> X-Frame-Options <span class="str">"SAMEORIGIN"</span> always;
+    <span class="kw">add_header</span> X-Content-Type-Options <span class="str">"nosniff"</span> always;
+    <span class="kw">add_header</span> Strict-Transport-Security <span class="str">"max-age=31536000; includeSubDomains"</span> always;
+    <span class="kw">add_header</span> Content-Security-Policy
+      <span class="str">"default-src 'self'; script-src 'self' cdnjs.cloudflare.com 'unsafe-inline'; style-src 'self' fonts.googleapis.com 'unsafe-inline'; font-src fonts.gstatic.com; img-src 'self' data:"</span> always;
+
+    <span class="cmt"># Gzip</span>
+    <span class="kw">gzip</span> on;
+    <span class="kw">gzip_types</span> text/html text/css application/javascript application/json;
+
+    <span class="kw">location</span> / {
+        <span class="kw">try_files</span> $uri $uri/ /index.html;
+        <span class="kw">expires</span> 1h;
+        <span class="kw">add_header</span> Cache-Control <span class="str">"public, max-age=3600"</span>;
+    }
+
+    <span class="kw">location</span> ~* \.(png|jpg|ico|woff2)$ {
+        <span class="kw">expires</span> 30d;
+        <span class="kw">add_header</span> Cache-Control <span class="str">"public, immutable"</span>;
+    }
+}
+
+<span class="cmt"># Redirect HTTP → HTTPS</span>
+server {
+    <span class="kw">listen</span> 80;
+    <span class="kw">server_name</span> sentinel.enterprise.io;
+    <span class="kw">return</span> 301 https://$host$request_uri;
+}</div>
+      <button class="copy-btn" onclick="copyCode(this)">COPY</button>
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════════════════ 12 — DOCKER -->
+  <section class="doc-section" id="deploy-docker">
+    <span class="section-eyebrow">// 12 — DOCKER CONTAINER</span>
+    <h2 class="section-title">Docker Production<br>Container</h2>
+
+    <h4>DOCKERFILE</h4>
+    <div class="cb-wrap">
+      <div class="code-block" data-lang="DOCKERFILE">
+<span class="cmt"># Sentinel Prime — Production Docker Image
+# Nginx Alpine — minimal attack surface (~10MB image)</span>
+<span class="kw">FROM</span> nginx:alpine <span class="kw">AS</span> production
+
+<span class="kw">WORKDIR</span> /usr/share/nginx/html
+<span class="kw">RUN</span> rm -rf ./*
+
+<span class="kw">COPY</span> sentinel_prime.html ./
+<span class="kw">COPY</span> index.html          ./
+<span class="kw">COPY</span> docs/               ./docs/
+<span class="kw">COPY</span> assets/             ./assets/
+<span class="kw">COPY</span> nginx.conf /etc/nginx/conf.d/default.conf
+
+<span class="kw">EXPOSE</span> 80
+
+<span class="kw">HEALTHCHECK</span> --interval=30s --timeout=5s --start-period=5s --retries=3 \
+  <span class="kw">CMD</span> wget -qO- http://localhost/ || exit 1
+
+<span class="kw">CMD</span> ["nginx", "-g", "daemon off;"]</div>
+      <button class="copy-btn" onclick="copyCode(this)">COPY</button>
+    </div>
+
+    <h4>DOCKER COMPOSE — PRODUCTION + TRAEFIK PROXY</h4>
+    <div class="cb-wrap">
+      <div class="code-block" data-lang="YAML">
+<span class="cmt"># docker-compose.yml — Sentinel Prime + Traefik + Let's Encrypt</span>
+version: <span class="str">'3.8'</span>
+
+services:
+  sentinel-prime:
+    build: .
+    image: sentinel-prime:v4.2.0
+    container_name: sentinel-prime
+    restart: unless-stopped
+    labels:
+      - <span class="str">"traefik.enable=true"</span>
+      - <span class="str">"traefik.http.routers.sentinel.rule=Host(`sentinel.enterprise.io`)"</span>
+      - <span class="str">"traefik.http.routers.sentinel.entrypoints=websecure"</span>
+      - <span class="str">"traefik.http.routers.sentinel.tls.certresolver=letsencrypt"</span>
+    networks: [proxy]
+
+  traefik:
+    image: traefik:v3.0
+    command:
+      - <span class="str">"--providers.docker=true"</span>
+      - <span class="str">"--providers.docker.exposedbydefault=false"</span>
+      - <span class="str">"--entrypoints.web.address=:80"</span>
+      - <span class="str">"--entrypoints.websecure.address=:443"</span>
+      - <span class="str">"--certificatesresolvers.letsencrypt.acme.tlschallenge=true"</span>
+      - <span class="str">"--certificatesresolvers.letsencrypt.acme.email=contact@localpulse.pro"</span>
+      - <span class="str">"--certificatesresolvers.letsencrypt.acme.storage=/letsencrypt/acme.json"</span>
+    ports: [<span class="str">"80:80"</span>, <span class="str">"443:443"</span>]
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - letsencrypt:/letsencrypt
+    networks: [proxy]
+
+volumes:
+  letsencrypt:
+
+networks:
+  proxy:
+    external: true</div>
+      <button class="copy-btn" onclick="copyCode(this)">COPY</button>
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════════════════ 13 — AWS -->
+  <section class="doc-section" id="deploy-aws">
+    <span class="section-eyebrow">// 13 — AWS S3 + CLOUDFRONT</span>
+    <h2 class="section-title">AWS S3 + CloudFront<br>Enterprise Deployment</h2>
+
+    <div class="callout info">
+      <span class="callout-label">// AWS MARKETPLACE</span>
+      This is the recommended configuration for <strong>AWS Marketplace SaaS listings</strong>. CloudFront provides global edge caching, enterprise-grade HTTPS, WAF integration, and custom domain support.
+    </div>
+
+    <h4>CLI DEPLOYMENT SCRIPT</h4>
+    <div class="cb-wrap">
+      <div class="code-block" data-lang="BASH">
+<span class="cmt">#!/bin/bash
+# deploy-aws.sh — Full Sentinel Prime AWS deployment</span>
+
+BUCKET=<span class="str">"sentinel-prime-enterprise"</span>
+REGION=<span class="str">"eu-west-1"</span>
+DIST_ID=<span class="str">"YOUR_CLOUDFRONT_DISTRIBUTION_ID"</span>
+
+<span class="cmt"># 1 — Create S3 bucket</span>
+aws s3 <span class="fn">mb</span> s3://$BUCKET --region $REGION
+
+<span class="cmt"># 2 — Block all public access (CloudFront OAI handles delivery)</span>
+aws s3api put-public-access-block \
+  --bucket $BUCKET \
+  --public-access-block-configuration \
+  "BlockPublicAcls=true,IgnorePublicAcls=true,BlockPublicPolicy=true,RestrictPublicBuckets=true"
+
+<span class="cmt"># 3 — Sync package files (exclude dev files)</span>
+aws s3 sync . s3://$BUCKET/ \
+  --exclude <span class="str">"*.md"</span> \
+  --exclude <span class="str">".git/*"</span> \
+  --exclude <span class="str">"node_modules/*"</span> \
+  --cache-control <span class="str">"max-age=3600,public"</span>
+
+<span class="cmt"># 4 — Set HTML content-type explicitly</span>
+aws s3 cp s3://$BUCKET/index.html s3://$BUCKET/index.html \
+  --content-type <span class="str">"text/html;charset=utf-8"</span> \
+  --metadata-directive REPLACE
+
+<span class="cmt"># 5 — Invalidate CloudFront cache on update</span>
+aws cloudfront create-invalidation \
+  --distribution-id $DIST_ID \
+  --paths <span class="str">"/*"</span>
+
+echo <span class="str">"✓ Sentinel Prime deployed to s3://$BUCKET"</span></div>
+      <button class="copy-btn" onclick="copyCode(this)">COPY</button>
+    </div>
+
+    <h4>CLOUDFORMATION STACK (cloudfront.yaml)</h4>
+    <div class="cb-wrap">
+      <div class="code-block" data-lang="YAML">
+AWSTemplateFormatVersion: <span class="str">'2010-09-09'</span>
+Description: Sentinel Prime CDN Distribution
+
+Parameters:
+  BucketName:     { Type: String }
+  DomainName:     { Type: String }
+  CertificateArn: { Type: String }
+
+Resources:
+  OAI:
+    Type: AWS::CloudFront::CloudFrontOriginAccessIdentity
+    Properties:
+      CloudFrontOriginAccessIdentityConfig:
+        Comment: Sentinel Prime S3 OAI
+
+  BucketPolicy:
+    Type: AWS::S3::BucketPolicy
+    Properties:
+      Bucket: !Ref BucketName
+      PolicyDocument:
+        Statement:
+          - Effect: Allow
+            Principal: { CanonicalUser: !GetAtt OAI.S3CanonicalUserId }
+            Action: s3:GetObject
+            Resource: !Sub arn:aws:s3:::${BucketName}/*
+
+  Distribution:
+    Type: AWS::CloudFront::Distribution
+    Properties:
+      DistributionConfig:
+        Enabled: true
+        DefaultRootObject: index.html
+        PriceClass: PriceClass_100
+        Aliases: [!Ref DomainName]
+        ViewerCertificate:
+          AcmCertificateArn: !Ref CertificateArn
+          SslSupportMethod: sni-only
+          MinimumProtocolVersion: TLSv1.2_2021
+        Origins:
+          - Id: S3Origin
+            DomainName: !Sub ${BucketName}.s3.${AWS::Region}.amazonaws.com
+            S3OriginConfig:
+              OriginAccessIdentity: !Sub origin-access-identity/cloudfront/${OAI}
+        DefaultCacheBehavior:
+          TargetOriginId: S3Origin
+          ViewerProtocolPolicy: redirect-to-https
+          CachePolicyId: 658327ea-f89d-4fab-a63d-7e88639e58f6  <span class="cmt"># CachingOptimized</span>
+          Compress: true
+        CustomErrorResponses:
+          - ErrorCode: 403
+            ResponsePagePath: /index.html
+            ResponseCode: 200
+          - ErrorCode: 404
+            ResponsePagePath: /index.html
+            ResponseCode: 200</div>
+      <button class="copy-btn" onclick="copyCode(this)">COPY</button>
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════════════════ 14 — KUBERNETES -->
+  <section class="doc-section" id="deploy-k8s">
+    <span class="section-eyebrow">// 14 — KUBERNETES / HELM</span>
+    <h2 class="section-title">Kubernetes Deployment<br>&amp; Ingress</h2>
+
+    <div class="cb-wrap">
+      <div class="code-block" data-lang="YAML">
+<span class="cmt"># sentinel-prime.yaml — Full K8s manifest</span>
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: sentinel-prime
+  namespace: security-ops
+  labels: { app: sentinel-prime, version: v4.2.0 }
+spec:
+  replicas: 3
+  selector:
+    matchLabels: { app: sentinel-prime }
+  template:
+    metadata:
+      labels: { app: sentinel-prime }
+    spec:
+      containers:
+      - name: sentinel-prime
+        image: sentinel-prime:v4.2.0
+        ports: [{ containerPort: 80 }]
+        resources:
+          requests: { memory: 32Mi, cpu: 50m }
+          limits:   { memory: 128Mi, cpu: 200m }
+        livenessProbe:
+          httpGet: { path: /, port: 80 }
+          initialDelaySeconds: 5
+          periodSeconds: 30
+        readinessProbe:
+          httpGet: { path: /, port: 80 }
+          initialDelaySeconds: 3
+          periodSeconds: 10
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: sentinel-prime-svc
+  namespace: security-ops
+spec:
+  selector: { app: sentinel-prime }
+  ports: [{ port: 80, targetPort: 80 }]
+  type: ClusterIP
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: sentinel-prime-ingress
+  namespace: security-ops
+  annotations:
+    cert-manager.io/cluster-issuer: letsencrypt-prod
+    nginx.ingress.kubernetes.io/ssl-redirect: <span class="str">"true"</span>
+    nginx.ingress.kubernetes.io/proxy-body-size: <span class="str">"10m"</span>
+spec:
+  ingressClassName: nginx
+  tls:
+  - hosts: [sentinel.enterprise.io]
+    secretName: sentinel-tls
+  rules:
+  - host: sentinel.enterprise.io
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: sentinel-prime-svc
+            port: { number: 80 }</div>
+      <button class="copy-btn" onclick="copyCode(this)">COPY</button>
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════════════════ 15 — ELECTRON -->
+  <section class="doc-section" id="deploy-electron">
+    <span class="section-eyebrow">// 15 — ELECTRON DESKTOP</span>
+    <h2 class="section-title">Electron Desktop<br>Application Packaging</h2>
+
+    <h4>MAIN PROCESS (main.js)</h4>
+    <div class="cb-wrap">
+      <div class="code-block" data-lang="JAVASCRIPT">
+<span class="kw">const</span> { app, BrowserWindow, Menu, shell } = <span class="fn">require</span>(<span class="str">'electron'</span>);
+<span class="kw">const</span> path = <span class="fn">require</span>(<span class="str">'path'</span>);
+
+<span class="kw">function</span> <span class="fn">createWindow</span>() {
+  <span class="kw">const</span> win = <span class="kw">new</span> <span class="fn">BrowserWindow</span>({
+    width: <span class="num">1920</span>, height: <span class="num">1080</span>,
+    minWidth: <span class="num">1280</span>, minHeight: <span class="num">720</span>,
+    title:           <span class="str">'SENTINEL PRIME — Enterprise SOC Dashboard'</span>,
+    icon:            path.<span class="fn">join</span>(__dirname, <span class="str">'assets/icon.png'</span>),
+    backgroundColor: <span class="str">'#04060d'</span>,
+    webPreferences: {
+      nodeIntegration:  <span class="kw">false</span>,
+      contextIsolation: <span class="kw">true</span>,
+      preload:          path.<span class="fn">join</span>(__dirname, <span class="str">'preload.js'</span>)
+    }
+  });
+
+  Menu.<span class="fn">setApplicationMenu</span>(<span class="kw">null</span>);  <span class="cmt">// clean SOC UI — no menu bar</span>
+  win.<span class="fn">loadFile</span>(<span class="str">'sentinel_prime.html'</span>);
+
+  <span class="cmt">// Open external links in system browser, not Electron window</span>
+  win.webContents.<span class="fn">setWindowOpenHandler</span>(({ url }) => {
+    shell.<span class="fn">openExternal</span>(url);
+    <span class="kw">return</span> { action: <span class="str">'deny'</span> };
+  });
+}
+
+app.<span class="fn">whenReady</span>().<span class="fn">then</span>(createWindow);
+app.<span class="fn">on</span>(<span class="str">'window-all-closed'</span>, () => { <span class="kw">if</span> (process.platform !== <span class="str">'darwin'</span>) app.<span class="fn">quit</span>(); });
+app.<span class="fn">on</span>(<span class="str">'activate'</span>, () => { <span class="kw">if</span> (BrowserWindow.<span class="fn">getAllWindows</span>().length === <span class="num">0</span>) <span class="fn">createWindow</span>(); });</div>
+      <button class="copy-btn" onclick="copyCode(this)">COPY</button>
+    </div>
+
+    <h4>PACKAGE.JSON</h4>
+    <div class="cb-wrap">
+      <div class="code-block" data-lang="JSON">
+{
+  <span class="attr">"name"</span>: <span class="str">"sentinel-prime"</span>,
+  <span class="attr">"version"</span>: <span class="str">"4.2.0"</span>,
+  <span class="attr">"description"</span>: <span class="str">"Sentinel Prime Enterprise SOC Dashboard"</span>,
+  <span class="attr">"main"</span>: <span class="str">"main.js"</span>,
+  <span class="attr">"scripts"</span>: {
+    <span class="attr">"start"</span>:   <span class="str">"electron ."</span>,
+    <span class="attr">"build"</span>:   <span class="str">"electron-builder --publish never"</span>,
+    <span class="attr">"build:win"</span>: <span class="str">"electron-builder --win"</span>,
+    <span class="attr">"build:mac"</span>: <span class="str">"electron-builder --mac"</span>,
+    <span class="attr">"build:linux"</span>: <span class="str">"electron-builder --linux"</span>
+  },
+  <span class="attr">"build"</span>: {
+    <span class="attr">"appId"</span>: <span class="str">"io.localpulse.sentinel-prime"</span>,
+    <span class="attr">"productName"</span>: <span class="str">"Sentinel Prime"</span>,
+    <span class="attr">"copyright"</span>: <span class="str">"© 2026 Ciprian Stefan Plesca. All Rights Reserved."</span>,
+    <span class="attr">"win"</span>:   { <span class="attr">"target"</span>: [<span class="str">"nsis"</span>], <span class="attr">"icon"</span>: <span class="str">"assets/icon.ico"</span> },
+    <span class="attr">"mac"</span>:   { <span class="attr">"target"</span>: [<span class="str">"dmg"</span>],  <span class="attr">"icon"</span>: <span class="str">"assets/icon.icns"</span> },
+    <span class="attr">"linux"</span>: { <span class="attr">"target"</span>: [<span class="str">"AppImage"</span>] }
+  },
+  <span class="attr">"devDependencies"</span>: {
+    <span class="attr">"electron"</span>: <span class="str">"^30.0.0"</span>,
+    <span class="attr">"electron-builder"</span>: <span class="str">"^24.0.0"</span>
+  }
+}</div>
+      <button class="copy-btn" onclick="copyCode(this)">COPY</button>
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════════════════ 16 — REBRANDING -->
+  <section class="doc-section" id="rebranding">
+    <span class="section-eyebrow">// 16 — WHITE-LABEL REBRANDING</span>
+    <h2 class="section-title">White-Label Rebranding<br>Guide (Sentinel → Enterprise)</h2>
+
+    <div class="callout warn">
+      <span class="callout-label">// LICENCE REQUIREMENT</span>
+      White-label rebranding rights are granted exclusively under the <strong>Sentinel Tier ($499)</strong> and <strong>Classified Tier</strong> licences. Observer and Operator licences do not include rebranding rights.
+    </div>
+
+    <h3>COMPLETE REBRANDING CHECKLIST</h3>
+
+    <h4>1 — REPLACE PRODUCT NAME</h4>
+    <div class="cb-wrap">
+      <div class="code-block" data-lang="BASH">
+<span class="cmt"># Find all "SENTINEL PRIME" occurrences (case-sensitive)</span>
+grep -n <span class="str">"SENTINEL PRIME"</span> sentinel_prime.html | wc -l
+
+<span class="cmt"># Replace with your product name (macOS sed)</span>
+sed -i <span class="str">''</span> <span class="str">'s/SENTINEL PRIME/YOUR PRODUCT NAME/g'</span> sentinel_prime.html
+sed -i <span class="str">''</span> <span class="str">'s/Sentinel Prime/Your Product Name/g'</span> sentinel_prime.html
+
+<span class="cmt"># Replace on Linux</span>
+sed -i <span class="str">'s/SENTINEL PRIME/YOUR PRODUCT NAME/g'</span> sentinel_prime.html
+sed -i <span class="str">'s/Sentinel Prime/Your Product Name/g'</span> sentinel_prime.html</div>
+      <button class="copy-btn" onclick="copyCode(this)">COPY</button>
+    </div>
+
+    <h4>2 — SWAP CSS COLOUR TOKENS (FULL REBRAND IN 6 LINES)</h4>
+    <div class="cb-wrap">
+      <div class="code-block" data-lang="CSS">
+<span class="cmt">/* Override :root tokens — placed AFTER the existing :root block */</span>
+:root {
+  <span class="cmt">/* Replace cyan accent with your brand primary */</span>
+  --cyan:       <span class="str">#7c3aed</span>;  <span class="cmt">/* example: purple brand */</span>
+  --cyan-dim:   <span class="str">#5b21b6</span>;
+  --cyan-glow:  <span class="str">rgba(124,58,237,0.15)</span>;
+  --text-mono:  <span class="str">#7c3aed</span>;
+
+  <span class="cmt">/* Adjust backgrounds if needed */</span>
+  --bg-void:    <span class="str">#04030a</span>;
+  --bg-base:    <span class="str">#07060f</span>;
+}</div>
+      <button class="copy-btn" onclick="copyCode(this)">COPY</button>
+    </div>
+
+    <h4>3 — TOPBAR &amp; SIDEBAR BRAND STRINGS</h4>
+    <table class="doc-table">
+      <tr><th>ELEMENT</th><th>SELECTOR / ID</th><th>DEFAULT VALUE</th><th>REPLACE WITH</th></tr>
+      <tr><td>Sidebar logo</td><td><code>.brand-name</code></td><td>SENTINEL PRIME</td><td>YOUR PRODUCT NAME</td></tr>
+      <tr><td>Sidebar sub</td><td><code>.brand-sub</code></td><td>ENTERPRISE SECURITY OPERATIONS PLATFORM v4.2.0</td><td>Your subtitle</td></tr>
+      <tr><td>Page &lt;title&gt;</td><td><code>&lt;title&gt;</code></td><td>SENTINEL PRIME — Enterprise...</td><td>Your title</td></tr>
+      <tr><td>User name</td><td><code>.user-name</code></td><td>Ciprian Stefan Plesca</td><td>Your user</td></tr>
+      <tr><td>User role</td><td><code>.user-role</code></td><td>CHIEF INFORMATION SECURITY OFFICER</td><td>Your role</td></tr>
+      <tr><td>User avatar</td><td><code>.user-avatar</code></td><td>CSP</td><td>Your initials</td></tr>
+      <tr><td>Report footer</td><td><code>#reportDate</code> parent</td><td>SENTINEL PRIME ENTERPRISE...</td><td>Your footer</td></tr>
+    </table>
+
+    <h4>4 — FONT SWAP</h4>
+    <div class="cb-wrap">
+      <div class="code-block" data-lang="CSS">
+<span class="cmt">/* Replace display font — example: Exo 2 instead of Orbitron */</span>
+@import url(<span class="str">'https://fonts.googleapis.com/css2?family=Exo+2:wght@400;700;900&display=swap'</span>);
+
+:root {
+  --font-display: <span class="str">'Exo 2'</span>, sans-serif;
+}</div>
+      <button class="copy-btn" onclick="copyCode(this)">COPY</button>
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════════════════ 17 — CUSTOMISATION -->
+  <section class="doc-section" id="customisation">
+    <span class="section-eyebrow">// 17 — MODULE CUSTOMISATION</span>
+    <h2 class="section-title">Adding &amp; Removing<br>Tab Modules</h2>
+
+    <h3>ADD A NEW MODULE</h3>
+    <div class="cb-wrap">
+      <div class="code-block" data-lang="HTML">
+<span class="cmt">&lt;!-- Step 1: Add sidebar nav item --&gt;</span>
+<span class="tag">&lt;div</span> <span class="attr">class</span>=<span class="str">"nav-item"</span> <span class="attr">onclick</span>=<span class="str">"showTab('my-module')"</span><span class="tag">&gt;</span>
+  <span class="tag">&lt;div</span> <span class="attr">class</span>=<span class="str">"nav-icon"</span><span class="tag">&gt;</span>🔬<span class="tag">&lt;/div&gt;</span>
+  <span class="tag">&lt;span&gt;</span>MY MODULE<span class="tag">&lt;/span&gt;</span>
+<span class="tag">&lt;/div&gt;</span>
+
+<span class="cmt">&lt;!-- Step 2: Add tab-pane inside &lt;main&gt; --&gt;</span>
+<span class="tag">&lt;div</span> <span class="attr">class</span>=<span class="str">"tab-pane"</span> <span class="attr">id</span>=<span class="str">"tab-my-module"</span><span class="tag">&gt;</span>
+  <span class="tag">&lt;div</span> <span class="attr">class</span>=<span class="str">"page-header"</span><span class="tag">&gt;</span>
+    <span class="tag">&lt;div&gt;</span>
+      <span class="tag">&lt;div</span> <span class="attr">class</span>=<span class="str">"page-title"</span><span class="tag">&gt;</span>MY MODULE<span class="tag">&lt;/div&gt;</span>
+      <span class="tag">&lt;div</span> <span class="attr">class</span>=<span class="str">"page-subtitle"</span><span class="tag">&gt;</span>SUBTITLE HERE<span class="tag">&lt;/div&gt;</span>
+    <span class="tag">&lt;/div&gt;</span>
+  <span class="tag">&lt;/div&gt;</span>
+  <span class="cmt">&lt;!-- Your content here --&gt;</span>
+  <span class="tag">&lt;canvas</span> <span class="attr">id</span>=<span class="str">"myChart"</span><span class="tag">&gt;&lt;/canvas&gt;</span>
+<span class="tag">&lt;/div&gt;</span></div>
+      <button class="copy-btn" onclick="copyCode(this)">COPY</button>
+    </div>
+
+    <div class="cb-wrap">
+      <div class="code-block" data-lang="JAVASCRIPT">
+<span class="cmt">// Step 3: Register in initChartsForTab()</span>
+<span class="kw">function</span> <span class="fn">initChartsForTab</span>(name) {
+  <span class="cmt">// ... existing entries ...</span>
+  <span class="kw">if</span> (name === <span class="str">'my-module'</span>) { <span class="fn">initMyChart</span>(); }
+}
+
+<span class="cmt">// Step 4: Write your chart initialiser</span>
+<span class="kw">function</span> <span class="fn">initMyChart</span>() {
+  <span class="kw">const</span> id = <span class="str">'myChart'</span>;
+  <span class="fn">destroyChart</span>(id);
+  chartInstances[id] = <span class="kw">new</span> Chart(document.<span class="fn">getElementById</span>(id), {
+    type: <span class="str">'line'</span>,
+    data: { labels: [], datasets: [{ data: [], borderColor: <span class="str">'var(--cyan)'</span> }] },
+    options: { responsive: <span class="kw">true</span>, maintainAspectRatio: <span class="kw">false</span> }
+  });
+}</div>
+      <button class="copy-btn" onclick="copyCode(this)">COPY</button>
+    </div>
+
+    <h3>REMOVE A MODULE</h3>
+    <ul>
+      <li class="r">Remove the <code>.nav-item</code> with the corresponding <code>onclick="showTab('...')"</code> from the sidebar</li>
+      <li class="r">Remove the entire <code>&lt;div class="tab-pane" id="tab-..."&gt;</code> block from the main area</li>
+      <li class="r">Remove the matching line from <code>initChartsForTab()</code> in the script block</li>
+      <li class="a">Optionally call <code>destroyChart('chartId')</code> to release any Chart.js instance</li>
+    </ul>
+  </section>
+
+  <!-- ═══════════════════════════════════════ 18 — LICENSING -->
+  <section class="doc-section" id="licensing">
+    <span class="section-eyebrow">// 18 — LICENSE TIERS</span>
+    <h2 class="section-title">Commercial License<br>Tier Reference</h2>
+
+    <div class="tier-grid">
+      <div class="tier-card">
+        <div class="tier-name">OBSERVER</div>
+        <div class="tier-price">$0</div>
+        <div class="tier-desc">Evaluation / portfolio viewing only. Non-commercial use exclusively.</div>
+        <ul class="tier-features">
+          <li>View live demo</li>
+          <li>Inspect CSS design system</li>
+          <li>Dashboard module only</li>
+          <li style="color:var(--text-4)">No commercial use</li>
+          <li style="color:var(--text-4)">No editing rights</li>
+          <li style="color:var(--text-4)">No redistribution</li>
+        </ul>
+      </div>
+      <div class="tier-card featured">
+        <div class="tier-badge">MOST POPULAR</div>
+        <div class="tier-name">OPERATOR</div>
+        <div class="tier-price">$149</div>
+        <div class="tier-desc">Full kit. All modules. Single commercial project licence.</div>
+        <ul class="tier-features">
+          <li>All 11 modules — full source</li>
+          <li>Single commercial project</li>
+          <li>Lifetime access + updates</li>
+          <li>CSS design system tokens</li>
+          <li>API integration blueprints</li>
+          <li style="color:var(--text-4)">No white-label rights</li>
+        </ul>
+      </div>
+      <div class="tier-card">
+        <div class="tier-name">SENTINEL</div>
+        <div class="tier-price">$499</div>
+        <div class="tier-desc">Unlimited projects, team seats, full white-label rights.</div>
+        <ul class="tier-features">
+          <li>Everything in Operator</li>
+          <li>Unlimited commercial projects</li>
+          <li>Up to 10 team seats</li>
+          <li>White-label &amp; rebranding rights</li>
+          <li>Priority support</li>
+          <li>Future modules included</li>
+        </ul>
+      </div>
+      <div class="tier-card">
+        <div class="tier-name">CLASSIFIED</div>
+        <div class="tier-price" style="font-size:18px;padding-top:6px">CONTACT</div>
+        <div class="tier-desc">Custom development, AWS Marketplace, enterprise redistribution.</div>
+        <ul class="tier-features">
+          <li>Everything in Sentinel</li>
+          <li>Unlimited team seats</li>
+          <li>Custom module development</li>
+          <li>AWS Marketplace listing support</li>
+          <li>SLA-backed support</li>
+          <li>NDA / MSA available</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="callout info">
+      <span class="callout-label">// LICENSING CONTACT</span>
+      For Operator and Sentinel licence acquisition: <strong>ciprianstefanplesca.gumroad.com/l/sentinel_prime</strong><br>
+      For Classified (enterprise / custom) enquiries: <strong>cal.com/ciprian-stefan-plesca</strong>  |  <strong>contact@localpulse.pro</strong>
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════════════════ 19 — IP & COPYRIGHT -->
+  <section class="doc-section" id="ip">
+    <span class="section-eyebrow">// 19 — IP &amp; COPYRIGHT</span>
+    <h2 class="section-title">Intellectual Property<br>&amp; Legal Framework</h2>
+
+    <div class="callout danger">
+      <span class="callout-label">// LEGAL NOTICE</span>
+      <strong>ALL RIGHTS RESERVED.</strong> Sentinel Prime and all associated intellectual property — source code, CSS architecture, visual design, interface layout, animation logic, naming, and conceptual frameworks — are the exclusive property of <strong>Ciprian Stefan Plesca</strong>. Unauthorized use, reproduction, redistribution, or modification may constitute copyright infringement under applicable international law.
+    </div>
+
+    <h3>PROTECTED ELEMENTS</h3>
+    <ul>
+      <li class="r">Source code — HTML, CSS, and JavaScript in all files</li>
+      <li class="r">CSS Design Token System — all <code>:root</code> variable definitions and architecture</li>
+      <li class="r">Cybersecurity dashboard UI architecture and module composition</li>
+      <li class="r">Threat intelligence panel layout and modular structure</li>
+      <li class="r">Cinematic interface design methodology and visual system</li>
+      <li class="r">Interactive terminal simulation logic and UX pattern</li>
+      <li class="r">Branding, naming, and visual identity ("Sentinel Prime")</li>
+      <li class="r">All documentation, diagrams, and implementation guides</li>
+    </ul>
+
+    <h3>GOVERNING LEGAL FRAMEWORKS</h3>
+    <table class="doc-table">
+      <tr><th>FRAMEWORK</th><th>APPLICABILITY</th></tr>
+      <tr><td>Berne Convention for the Protection of Literary and Artistic Works</td><td>International baseline copyright — 181 member states</td></tr>
+      <tr><td>WIPO Copyright Treaty (WCT)</td><td>Software and digital works protection</td></tr>
+      <tr><td>EU Directive 2009/24/EC</td><td>Software copyright protection (EU jurisdiction)</td></tr>
+      <tr><td>Applicable national copyright legislation</td><td>Jurisdiction of the Licensor's residence</td></tr>
+    </table>
+
+    <h3>STRICTLY PROHIBITED WITHOUT WRITTEN LICENCE</h3>
+    <ul>
+      <li class="r">Copying, duplicating, or reproducing source code in any form</li>
+      <li class="r">Modifying, adapting, or creating derivative works</li>
+      <li class="r">Redistributing, mirroring, or publishing on any platform</li>
+      <li class="r">Commercial use, monetisation, or product integration</li>
+      <li class="r">Using as AI training data or ML dataset input</li>
+      <li class="r">Reverse engineering or decompiling any component</li>
+      <li class="r">Sublicensing or reselling without Sentinel/Classified tier</li>
+    </ul>
+
+    <div class="doc-divider"></div>
+
+    <p style="font-family:var(--font-mono);font-size:10px;color:var(--text-3);letter-spacing:.8px;line-height:2">
+      © 2026 CIPRIAN STEFAN PLESCA &nbsp;|&nbsp; ALL RIGHTS RESERVED<br>
+      SENTINEL PRIME v4.2.0-ENTERPRISE &nbsp;|&nbsp; PROPRIETARY SOFTWARE<br>
+      contact@localpulse.pro &nbsp;|&nbsp; cal.com/ciprian-stefan-plesca
+    </p>
+  </section>
+
+</main>
+</div><!-- .layout -->
+
+<script>
+/* ============================================================
+   SENTINEL PRIME — Documentation Engine
+   © 2026 Ciprian Stefan Plesca. All Rights Reserved.
+   ============================================================ */
+
+// ── READ PROGRESS BAR ─────────────────────────────────────
+window.addEventListener('scroll', () => {
+  const doc = document.documentElement;
+  const scrollTop = doc.scrollTop || document.body.scrollTop;
+  const scrollHeight = doc.scrollHeight - doc.clientHeight;
+  const progress = scrollTop / scrollHeight;
+  document.getElementById('readProgress').style.transform = `scaleX(${progress})`;
+});
+
+// ── INTERSECTION OBSERVER — section reveal ────────────────
+(function() {
+  const observer = new IntersectionObserver(entries => {
+    entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('visible'); });
+  }, { threshold: 0.06 });
+  document.querySelectorAll('.doc-section').forEach(s => observer.observe(s));
+})();
+
+// ── ACTIVE NAV ON SCROLL ──────────────────────────────────
+(function() {
+  const sections = document.querySelectorAll('.doc-section[id]');
+  const navItems = document.querySelectorAll('.nav-item[href]');
+
+  const observer = new IntersectionObserver(entries => {
+    entries.forEach(e => {
+      if (e.isIntersecting) {
+        const id = e.target.getAttribute('id');
+        navItems.forEach(n => {
+          n.classList.toggle('active', n.getAttribute('href') === '#' + id);
+        });
+      }
+    });
+  }, { rootMargin: '-20% 0px -60% 0px' });
+
+  sections.forEach(s => observer.observe(s));
+})();
+
+// ── COPY CODE BUTTONS ────────────────────────────────────
+function copyCode(btn) {
+  const block = btn.previousElementSibling;
+  const text = block.innerText || block.textContent;
+  navigator.clipboard.writeText(text).then(() => {
+    btn.textContent = 'COPIED ✓';
+    btn.classList.add('copied');
+    setTimeout(() => { btn.textContent = 'COPY'; btn.classList.remove('copied'); }, 2000);
+  }).catch(() => {
+    btn.textContent = 'FAILED';
+    setTimeout(() => btn.textContent = 'COPY', 2000);
+  });
+}
+
+// ── DOC SEARCH ────────────────────────────────────────────
+(function() {
+  const input = document.getElementById('docSearch');
+  if (!input) return;
+
+  input.addEventListener('input', function() {
+    const q = this.value.trim().toLowerCase();
+    if (!q) {
+      document.querySelectorAll('.doc-section').forEach(s => s.style.display = '');
+      return;
+    }
+    document.querySelectorAll('.doc-section').forEach(s => {
+      const text = s.innerText.toLowerCase();
+      s.style.display = text.includes(q) ? '' : 'none';
+    });
+  });
+
+  input.addEventListener('keydown', e => {
+    if (e.key === 'Escape') { input.value = ''; input.dispatchEvent(new Event('input')); }
+  });
+})();
+
+// ── SMOOTH SCROLL FOR SIDEBAR LINKS ─────────────────────
+document.querySelectorAll('.nav-item[href^="#"]').forEach(link => {
+  link.addEventListener('click', e => {
+    e.preventDefault();
+    const target = document.querySelector(link.getAttribute('href'));
+    if (target) target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  });
+});
+</script>
+</body>
+</html>
