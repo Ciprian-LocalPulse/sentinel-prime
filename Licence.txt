@@ -1,0 +1,73 @@
+SENTINEL PRIME
+Proprietary Software License
+
+Copyright (c) 2026
+Ciprian Stefan Plesca
+All Rights Reserved.
+
+1. Ownership
+
+The software project known as "Sentinel Prime", including but not limited to
+its source code, interface design, architectural concepts, documentation,
+visual assets, diagrams, and associated materials (collectively referred to
+as the "Software"), is the exclusive intellectual property of Ciprian Stefan
+Plesca.
+
+All rights, title, and interest in and to the Software are reserved by the
+author and are protected by international copyright laws, intellectual
+property treaties, and applicable national legislation.
+
+2. Restrictions
+
+Unless explicitly authorized in writing by the copyright holder,
+the following actions are strictly prohibited:
+
+• Copying or reproducing the Software in whole or in part
+• Modifying, adapting, reverse-engineering, or creating derivative works
+• Redistributing the Software in any form
+• Publishing the Software or its source code publicly
+• Using the Software for commercial purposes
+• Incorporating the Software into other software products or frameworks
+• Selling, sublicensing, or transferring the Software
+
+3. Limited Viewing Permission
+
+This repository may be made publicly accessible for demonstration,
+portfolio presentation, academic reference, or proof-of-concept purposes
+only. Such access does not grant any license to reproduce, distribute,
+or use the Software beyond viewing.
+
+4. Intellectual Property Protection
+
+The visual design, cybersecurity interface architecture, UI concepts,
+and system structure presented within Sentinel Prime represent
+proprietary research and conceptual development.
+
+Any unauthorized use, reproduction, or redistribution may constitute
+a violation of copyright law and may be subject to legal action.
+
+5. Commercial Licensing
+
+Commercial licensing or enterprise usage rights may be granted only
+through a separate written agreement issued by the author.
+
+For licensing inquiries or collaboration requests, please contact:
+
+https://cal.com/ciprian-stefan-plesca
+
+6. Disclaimer
+
+The Software is provided for demonstration and conceptual purposes.
+No warranty is provided regarding performance, security,
+or fitness for any particular purpose.
+
+By accessing this repository, you acknowledge and agree that all
+rights remain exclusively reserved by the copyright holder.
+
+Author:
+Ciprian Stefan Plesca
+
+Year:
+2026
+
+All Rights Reserved.
